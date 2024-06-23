@@ -17,7 +17,20 @@
     "README.md",
     "LICENSE"
   ],
-  "homepage": "https://github.com/biyuehu/sirius",
+  "homepage": "https://github.com/biyuehu/sirius#readme",
+  "bugs": {
+    "url": "https://github.com/biyuehu/sirius/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/biyuehu/sirius.git"
+  },
+  "keywords": [
+    "sirius",
+    "plugin",
+    "base",
+    "levilamina"
+  ],
   "devDependencies": {
     "@types/node": "^20.14.1",
     "@types/shelljs": "^0.8.15",
