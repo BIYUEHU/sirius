@@ -1,0 +1,42 @@
+{
+  "name": "sirius",
+  "description": "bds types",
+  "version": "1.0.0",
+  "private": true,
+  "license": "GPL-3.0",
+  "author": "Arimura <biyuehuya@gmail.com>",
+  "scripts": {
+    "build": "tsup",
+    "dev": "nodemon --watch",
+    "lint": "eslint \"src/*.ts\" --fix",
+    "format": "prettier --config .prettierrc \"src/*.ts\" --write",
+    "version": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
+  },
+  "files": [
+    "./dist/**/*.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.14.1",
+    "conventional-changelog-cli": "^4.1.0",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-typescript": "^3.0.0",
+    "nodemon": "^3.1.3",
+    "prettier": "^3.3.0",
+    "tsup": "^8.1.0",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=17.9.0"
+  },
+  "nodemonConfig": {
+    "exec": "pnpm build && cd server && bedrock_server_mod.exe",
+    "ext": "ts"
+  },
+  "dependencies": {
+    "tsukiko": "^1.3.1"
+  }
+}
