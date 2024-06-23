@@ -7,5 +7,5 @@
     "rootDir": "src",
     "lib": []
   },
-  "exclude": ["tsup.config.ts"]
+  "exclude": ["tsup.config.ts", "scripts"]
 }

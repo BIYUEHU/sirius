@@ -4,3 +4,5 @@ Sirius.js
 
 *.log
 node_modules
+*.env
+*.tgz

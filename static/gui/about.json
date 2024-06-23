@@ -1,0 +1,18 @@
+{
+  "title": "关于",
+  "content": "LittleCraftEx 服务器建立于 2019 年 11 月 1 日\n待补充...",
+  "buttons": [
+    {
+      "text": "感谢名单",
+      "action": "about/thanks"
+    },
+    {
+      "text": "黑名单",
+      "action": "about/deny"
+    },
+    {
+      "text": "返回",
+      "action": "index"
+    }
+  ]
+}
