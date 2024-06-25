@@ -1,1 +1,1 @@
-/// <reference path="../types/index.d.ts"/>
+/// <reference path="../node_modules/levilamina/types/index.d.ts"/>

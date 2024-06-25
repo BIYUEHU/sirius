@@ -1,0 +1,10 @@
+{
+	"title": "新手向导",
+	"content": "欢迎，请仔细阅读群内文件\n常用指令：\n获取钟表/clock\n查看公告/notice\n开公告传送点/warp gui\n\n更多内容参考《服务器管理制度条例◆第二章》\n大部分功能均可在菜单内找到",
+	"buttons": [
+		{
+			"text": "§a确定",
+			"action": "index"
+		}
+	]
+}

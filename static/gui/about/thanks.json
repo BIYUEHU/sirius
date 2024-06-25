@@ -1,0 +1,10 @@
+{
+  "title": "感谢名单",
+  "content": "§d§l捐赠名单：\nSans ID：OVELOADZack\n赞助260元\n二周目及二周目以前：\n沐木 ID：BaseMu\n赞助10元\n \nID：JiangSteve\n赞助6元\n \n风邪 ID： Dismalfengxie\n赞助5元\n \n苦力怕 ID：FairrTarsier4391\n赞助4.5元\n \nID：xMarioHux\n赞助2元",
+  "buttons": [
+    {
+      "text": "返回",
+      "action": "about"
+    }
+  ]
+}

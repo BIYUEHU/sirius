@@ -1,0 +1,33 @@
+{
+  "title": "助手系统",
+  "buttons": [
+    {
+      "text": "查看公告",
+      "action": "/notice"
+    },
+    {
+      "text": "自杀",
+      "action": "/suicide"
+    },
+    {
+      "text": "回到死亡点",
+      "action": "/back"
+    },
+    {
+      "text": "发送当前坐标",
+      "action": "/here"
+    },
+    {
+      "text": "私聊",
+      "action": "/msgui"
+    },
+    {
+      "text": "获得钟表",
+      "action": "/clock"
+    },
+    {
+      "text": "返回",
+      "action": "index"
+    }
+  ]
+}

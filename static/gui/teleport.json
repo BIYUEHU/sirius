@@ -1,0 +1,29 @@
+{
+  "title": "传送系统",
+  "buttons": [
+    {
+      "text": "跨服传送",
+      "action": "/transfer"
+    },
+    {
+      "text": "随机传送",
+      "action": "/tpr"
+    },
+    {
+      "text": "发起传送请求",
+      "action": "/tpa gui"
+    },
+    {
+      "text": "个人传送点",
+      "action": "/home gui"
+    },
+    {
+      "text": "公共传送点",
+      "action": "/warp gui"
+    },
+    {
+      "text": "返回",
+      "action": "index"
+    }
+  ]
+}
