@@ -5,7 +5,11 @@
     "strict": true,
     /* Path mapping for module imports */
     "rootDir": "src",
-    "lib": []
+    "lib": [],
+    "paths": {
+      "package.json": ["."]
+    }
   },
+  "include": ["src/**/*", "package.json"],
   "exclude": ["tsup.config.ts", "scripts"]
 }
