@@ -1,9 +1,8 @@
-export abstract class Component<C extends Record<string, any> | never = never> {
+export default abstract class Component<C extends Record<string, any> | never = never> {
   protected readonly config: C;
 
   public constructor(config: C) {
     this.config = config;
-    if (!this.config.enabled) return;
     this.register();
     mc.listen('onServerStarted', () => this.cmds.forEach((cmd) => cmd.setup()));
   }
@@ -20,5 +19,3 @@ export abstract class Component<C extends Record<string, any> | never = never> {
 
   public abstract register(): void;
 }
-
-export default Component;

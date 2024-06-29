@@ -1,7 +1,18 @@
-import { Config } from '../../constants';
+import { Config, DATA, Data, NOTICE_FILE } from '../../constants';
 import Component from '../../utils/component';
+import Gui from '../Gui/index';
 
 export default class Helper extends Component<Config['helper']> {
+  private loadNotice() {
+    const noticeContent = File.readFrom(NOTICE_FILE);
+    if (!noticeContent) return null;
+    return [noticeContent, noticeContent.split('').reduce((hash, char) => hash + char.charCodeAt(0), 0)] as const;
+  }
+
+  private saveNotice(notice: string) {
+    File.writeTo(NOTICE_FILE, notice);
+  }
+
   public register() {
     if (this.config.backCmdEnabled) this.back();
     if (this.config.suicideCmdEnabled) this.suicide();
@@ -14,10 +25,21 @@ export default class Helper extends Component<Config['helper']> {
   private readonly playerDieCache: Map<string, Player['pos']> = new Map();
 
   private sendNotice(pl: Player) {
-    pl.sendModalForm('公告', '这里是公告内容', '§a确认§r', '§c取消§r', (pl, result) => {
-      if (result) {
-        /* TODO: 处理确认，更新玩家已读数据 */
+    const notice = this.loadNotice();
+    if (!notice) {
+      pl.tell('当前服务器未设置公告');
+      return;
+    }
+    const [noticeContent, hash] = notice;
+    Gui.sendModal(pl, '公告', noticeContent, (pl) => {
+      const noticed = DATA.get('noticed');
+      if (noticed.hash === hash) {
+        if (noticed.list.includes(pl.xuid)) return;
+        noticed.list = [...noticed.list, pl.xuid];
+        return;
       }
+      noticed.hash = hash;
+      noticed.list = [pl.xuid];
     });
   }
 
@@ -70,8 +92,19 @@ export default class Helper extends Component<Config['helper']> {
     noticeCmd.overload([]);
     noticeCmd.setCallback((_, { player: pl }) => pl && this.sendNotice(pl));
 
+    const noticesetCmd = this.cmd('noticeset', '设置公告', PermType.GameMasters);
+    noticesetCmd.mandatory('content', ParamType.String);
+    noticesetCmd.overload(['content']);
+    noticesetCmd.setCallback((_, { player: pl }, { success }, { content }) => {
+      if (!pl) return;
+      this.saveNotice(content);
+      success('公告设置成功');
+    });
+
     mc.listen('onJoin', (pl) => {
-      /* TODO: 判断玩家是否已读公告 */
+      const notice = this.loadNotice();
+      if (!notice) return;
+      if (DATA.get('noticed').hash === notice[1] && DATA.get('noticed').list.includes(pl.xuid)) return;
       this.sendNotice(pl);
     });
   }
