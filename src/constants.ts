@@ -1,3 +1,5 @@
+import AutoJsonConfigFile from './utils/autoJsonConfigFile';
+
 export const PLUGIN_PATH = './plugins/Sirius';
 
 export const DATA_PATH = `${PLUGIN_PATH}/data`;
@@ -8,23 +10,28 @@ export const CONFIG_FILE = `${PLUGIN_PATH}/config.json`;
 
 export const DATA_FILE = `${DATA_PATH}/data.json`;
 
+export const NOTICE_FILE = `${DATA_PATH}/notice.txt`;
+
 const CONFIG_DEFAULT = {
   global: {
     decode: true,
     lang: 'zh_CN' as 'en_US' | 'ja_JP' | 'zh_CN' | 'zh_TW'
   },
+  hunter: {},
+  shop: {},
   utils: {
     enabled: true,
+    itemsUseOn: {
+      'minecraft:clock': 'menu'
+    } as Record<string, string>,
     joinWelcomeEnabled: true,
     joinWelcomeMsg: 'Welcome to the server, %player%!',
     motdDynastyEnabled: true,
     motdMsgs: ['server motd!'],
     motdInterval: 5,
-    itemsUseOn: {
-      'minecraft:clock': 'menu'
-    } as Record<string, string>,
     chatFormatEnabled: true,
-    chatFormat: '%player%: %message%'
+    chatFormat: '%player%: %message%',
+    sidebarEnabled: true
   },
   helper: {
     enabled: true,
@@ -34,12 +41,12 @@ const CONFIG_DEFAULT = {
     clockCmdEnabled: true,
     msguiCmdEnabled: true,
     hereCmdEnabled: true,
-    vanishCmdEnabled: true,
-    runasCmdEnabled: true,
     mapCmdEnabled: true
   },
   teleport: {
     enabled: true,
+    tpaCmdEnabled: true,
+    tpaExpireTime: 90,
     tprCmdEnabled: true,
     tprMaxDistance: 10000,
     tprMinDistance: 1000,
@@ -56,10 +63,12 @@ const CONFIG_DEFAULT = {
   },
   manger: {
     enabled: true,
+    vanishCmdEnabled: true,
+    runasCmdEnabled: true,
     banCmdEnabled: true,
     cloudBlackCheckEnabled: true,
     skickCmdEnabled: true,
-    gcrashCmdEnabled: true,
+    crashCmdEnabled: true,
     stopCmdEnabled: true,
     infoCmdEnabled: true,
     gameruleGuiEnabled: true
@@ -70,13 +79,16 @@ const CONFIG_DEFAULT = {
   money: {
     enabled: true,
     scoreboardName: 'money',
-    syncLLMoney: true
+    syncLLMoney: true,
+    payRate: 80,
+    shopCmdEnabled: true,
+    hunterEnabled: true
   }
 };
 
 export type Config = typeof CONFIG_DEFAULT;
 
-export const CONFIG = new JsonConfigFile(CONFIG_FILE, JSON.stringify(CONFIG_DEFAULT, null, 2));
+export const CONFIG = new AutoJsonConfigFile(CONFIG_FILE, CONFIG_DEFAULT);
 
 interface Position {
   dimension: 0 | 1 | 2;
@@ -87,11 +99,12 @@ interface Position {
 
 const DATA_DEFAULT = {
   xuids: {} as Record<string, String>,
+  tpasEnableList: [] as string[],
   homes: {} as Record<string, Record<string, Position>>,
-  warps: {} as Record<string, Record<string, Position>>,
+  warps: {} as Record<string, Position>,
   lands: {} as Record<string, Record<string, { start: Position; end: Position; allowlist: string[] }>>,
   noticed: {
-    hash: '',
+    hash: 0,
     list: [] as string[]
   },
   denylist: {} as Record<string, string>
@@ -99,4 +112,4 @@ const DATA_DEFAULT = {
 
 export type Data = typeof DATA_DEFAULT;
 
-export const DATA = new JsonConfigFile(DATA_PATH, JSON.stringify(DATA_DEFAULT, null, 2));
+export const DATA = new AutoJsonConfigFile(DATA_PATH, DATA_DEFAULT);

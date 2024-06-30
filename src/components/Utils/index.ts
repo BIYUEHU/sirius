@@ -3,13 +3,28 @@ import Component from '../../utils/component';
 import { ObjToPos, PosToObj } from '../../utils/position';
 import Gui from '../Gui/index';
 
-export default class Teleport extends Component<Config['teleport']> {
+export default class Utils extends Component<Config['utils']> {
   public register() {
-    if (this.config.transferCmdEnabled) this.transfer();
-    if (this.config.tprCmdEnabled) this.tpr();
-    if (this.config.tpaCmdEnabled) this.tpa();
-    if (this.config.homeCmdEnabled) this.home();
-    if (this.config.warpCmdEnabled) this.warp();
+    this.itemOnUse();
+    if (this.config.joinWelcomeEnabled) this.joinWelcome();
+    if (this.config.motdDynastyEnabled) this.motdDynasty();
+  }
+
+  private playerUsingCache: Set<string> = new Set();
+
+  private itemOnUse() {
+    mc.listen('onUseItemOn', (pl, item) => {
+      
+      if (item.type !== ) return;
+      if (this.playerUsingCache.has(pl.xuid)) return;
+      this.playerUsingCache.add(pl.xuid);
+      setTimeout(() => this.playerUsingCache.delete(pl.xuid), 500);
+      if ()
+    });
+  }
+
+  private joinWelcome() {
+    mc.listen('onJoin', (pl) => pl.tell(this.config.joinWelcomeMsg.replace('{0}', pl.realName)));
   }
 
   private readonly tpaTargetsRunning: Map<string, [string, () => void]> = new Map();

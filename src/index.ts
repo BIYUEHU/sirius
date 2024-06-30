@@ -1,9 +1,31 @@
 import pkg from '../package.json';
+import Gui from './components/Gui/index';
+import Helper from './components/Helper/index';
+import Teleport from './components/Teleport/index';
+import { CONFIG, DATA } from './constants';
+import Loader from './utils/loader';
 
-ll.registerPlugin(`${pkg.name.charAt(0).toUpperCase()}${pkg.name.slice(1)}`, '基础性插件', pkg.version.split('.'), {
-  ...(pkg.author ? { author: pkg.author } : {}),
-  ...(pkg.license ? { license: pkg.license } : {}),
-  ...(pkg.repository ? { repository: pkg.repository } : {})
-});
+const Plugin = new Loader(
+  Object.assign(pkg, {
+    name: `${pkg.name.charAt(0).toUpperCase()}${pkg.name.slice(1)}`,
+    description: '基础性插件',
+    version: pkg.version.split('.').map(Number)
+  }),
+  CONFIG,
+  [
+    ['gui', Gui],
+    ['helper', Helper],
+    ['teleport', Teleport]
+  ],
+  () => {
+    // Check update
 
-logger.info(`Sirius Loaded v${pkg.version}`);
+    // Record xuids
+    mc.listen('onJoin', ({ xuid, realName }) => {
+      const xuids = DATA.get('xuids');
+      if (!(xuid in xuids)) xuids[xuid] = realName;
+    });
+  }
+);
+
+export default Plugin;

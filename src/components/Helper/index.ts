@@ -1,7 +1,18 @@
-import { Config } from '../../constants';
+import { Config, DATA, Data, NOTICE_FILE } from '../../constants';
 import Component from '../../utils/component';
+import Gui from '../Gui/index';
 
 export default class Helper extends Component<Config['helper']> {
+  private loadNotice() {
+    const noticeContent = File.readFrom(NOTICE_FILE);
+    if (!noticeContent) return null;
+    return [noticeContent, noticeContent.split('').reduce((hash, char) => hash + char.charCodeAt(0), 0)] as const;
+  }
+
+  private saveNotice(notice: string) {
+    File.writeTo(NOTICE_FILE, notice);
+  }
+
   public register() {
     if (this.config.backCmdEnabled) this.back();
     if (this.config.suicideCmdEnabled) this.suicide();
@@ -14,10 +25,21 @@ export default class Helper extends Component<Config['helper']> {
   private readonly playerDieCache: Map<string, Player['pos']> = new Map();
 
   private sendNotice(pl: Player) {
-    pl.sendModalForm('公告', '这里是公告内容', '§a确认§r', '§c取消§r', (pl, result) => {
-      if (result) {
-        /* TODO: 处理确认，更新玩家已读数据 */
+    const notice = this.loadNotice();
+    if (!notice) {
+      pl.tell('当前服务器未设置公告');
+      return;
+    }
+    const [noticeContent, hash] = notice;
+    Gui.sendModal(pl, '公告', noticeContent, (pl) => {
+      const noticed = DATA.get('noticed');
+      if (noticed.hash === hash) {
+        if (noticed.list.includes(pl.xuid)) return;
+        noticed.list = [...noticed.list, pl.xuid];
+        return;
       }
+      noticed.hash = hash;
+      noticed.list = [pl.xuid];
     });
   }
 
@@ -35,7 +57,10 @@ export default class Helper extends Component<Config['helper']> {
       out.success('已传送至上次死亡点');
     });
 
-    mc.listen('onPlayerDie', (pl) => this.playerDieCache.set(pl.xuid, pl.pos));
+    mc.listen('onPlayerDie', (pl) => {
+      this.playerDieCache.set(pl.xuid, pl.pos);
+      pl.tell(`你在 ${pl.pos.x} ${pl.pos.y} ${pl.pos.z} 死了，使用 /back 可返回死亡地点`);
+    });
   }
 
   private suicide() {
@@ -47,12 +72,22 @@ export default class Helper extends Component<Config['helper']> {
   private msgui() {
     const msguiCmd = this.cmd('msgui', '打开私聊界面', PermType.Any);
     msguiCmd.overload([]);
-    msguiCmd.setCallback((_, { player: pl }) => {
-      if (!pl) return;
-      const playersList = mc.getOnlinePlayers().map((pl) => pl.realName);
-      const form = mc.newCustomForm().setTitle('私聊').addDropdown('选择玩家', playersList, 0).addInput('发送内容');
-      pl.sendForm(form, (_, data) => data && pl.runcmd(`msg "${playersList[data[0]]}" "${data[1]}`));
-    });
+    msguiCmd.setCallback(
+      (_, { player: pl }) =>
+        pl &&
+        Gui.send(pl, {
+          type: 'custom',
+          title: '私聊',
+          elements: [
+            { type: 'dropdown', title: '选择玩家', items: '@players' },
+            { type: 'input', title: '发送内容' }
+          ],
+          action: `msg "{0}" "${1}"`
+        })
+      //const playersList = mc.getOnlinePlayers().map((pl) => pl.realName);
+      //const form = mc.newCustomForm().setTitle('私聊').addDropdown('选择玩家', playersList, 0).addInput('发送内容');
+      //pl.sendForm(form, (_, data) => data && pl.runcmd(`msg "${playersList[data[0]]}" "${data[1]}`));
+    );
   }
 
   private clock() {
@@ -60,8 +95,8 @@ export default class Helper extends Component<Config['helper']> {
     clockCmd.overload([]);
     clockCmd.setCallback((_, { player: pl }) => {
       if (!pl) return;
-      mc.runcmdEx(`clear "${pl.realName}" clock 0 1`);
-      mc.runcmdEx(`give "${pl.realName}" clock 1`);
+      pl.clearItem('minecraft:clock', 1);
+      pl.giveItem(mc.newItem('minecraft:clock', 1)!);
     });
   }
 
@@ -70,8 +105,18 @@ export default class Helper extends Component<Config['helper']> {
     noticeCmd.overload([]);
     noticeCmd.setCallback((_, { player: pl }) => pl && this.sendNotice(pl));
 
+    const noticesetCmd = this.cmd('noticeset', '设置公告', PermType.GameMasters);
+    noticesetCmd.mandatory('content', ParamType.String);
+    noticesetCmd.overload(['content']);
+    noticesetCmd.setCallback((_, { player: pl }, { success }, { content }) => {
+      this.saveNotice(content);
+      success('公告设置成功');
+    });
+
     mc.listen('onJoin', (pl) => {
-      /* TODO: 判断玩家是否已读公告 */
+      const notice = this.loadNotice();
+      if (!notice) return;
+      if (DATA.get('noticed').hash === notice[1] && DATA.get('noticed').list.includes(pl.xuid)) return;
       this.sendNotice(pl);
     });
   }
