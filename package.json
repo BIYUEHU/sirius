@@ -57,6 +57,7 @@
       "tsconfig.json",
       "tsup.config.ts",
       "scripts",
+      "server",
       "tests",
       "*.test.ts"
     ]

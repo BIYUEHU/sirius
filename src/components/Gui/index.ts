@@ -93,7 +93,7 @@ export default class Gui extends Component<Config['gui']> {
     let content = expr.slice(1);
 
     data.forEach((d, index) => {
-      content = content.replace(new RegExp(`\{${index}\}`, 'g'), d.toString());
+      content = content.replace(new RegExp(`\\{${index}\\}`, 'g'), d.toString());
     });
 
     if (isAction) {
@@ -222,9 +222,11 @@ export default class Gui extends Component<Config['gui']> {
     if (this.config.menuCmdEnabled) this.menu();
   }
 
-  private list: Map<string, GuiData> = new Map();
+  private readonly list: Map<string, GuiData> = new Map();
 
   private getAll(path: string = GUI_PATH) {
+    logger.info(this, JSON.stringify(this), this.list);
+    const { list } = this;
     File.getFilesList(path).forEach((filename) => {
       const dir = `${path}/${filename}`;
       if (File.checkIsDir(dir)) {
@@ -252,6 +254,7 @@ export default class Gui extends Component<Config['gui']> {
       if (file.type === 'simple' || !file.type) {
         const invalidBtn = file.buttons?.filter(
           (btn) =>
+            btn.action &&
             typeof btn.action === 'string' &&
             !['/', '~', '#', '@', '$'].includes(btn.action.charAt(0)) &&
             !File.exists(`${GUI_PATH}/${btn.action}.json`)
@@ -262,7 +265,7 @@ export default class Gui extends Component<Config['gui']> {
         }
       }
 
-      this.list.set(dir.replace(/(.*)\/gui\/(.*)\.json/, '$2'), file);
+      list.set(dir.replace(/(.*)\/gui\/(.*)\.json/, '$2'), file);
     });
   }
 

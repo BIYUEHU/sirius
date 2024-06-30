@@ -20,11 +20,9 @@ export default class Teleport extends Component<Config['teleport']> {
     transferCmd.mandatory('ip', ParamType.String);
     transferCmd.optional('port', ParamType.Int);
     transferCmd.overload(['player', 'ip', 'port']);
-    transferCmd.setCallback((_, { player: pl }, out, result) => {
-      if (!pl) return;
-      out.addMessage(`传送目标到服务器 ${result.ip} : ${result.port}`);
-      logger.info(result);
-      pl.transServer(result.ip, result.port ?? 19132);
+    transferCmd.setCallback((_, __, out, { ip, port, player }) => {
+      out.addMessage(`传送目标到服务器 ${ip} : ${port}`);
+      player.forEach((pl: Player) => pl.transServer(ip, port ?? 19132));
     });
   }
 
@@ -46,7 +44,7 @@ export default class Teleport extends Component<Config['teleport']> {
         0
       );
       pl.teleport(position);
-      mc.runcmdEx(`effect "${pl.realName}" slow_falling 10  `);
+      pl.addEffect(27, 10, 1, false);
       out.success(`随机传送至 ${position.toString()}`);
     });
   }
@@ -78,17 +76,19 @@ export default class Teleport extends Component<Config['teleport']> {
 
     tpaCmd.setCallback((_, { player: pl }, out, result) => {
       const sendTpaModal = (message: string, command: string) =>
-        Gui.sendModal(
-          result.player,
-          '传送请求',
-          message,
-          (targetPl) => {
-            targetPl.runcmd(command);
-            out.success(`请求已被接受`);
-          },
-          () => out.error(`请求已被拒绝`),
-          '接受',
-          '拒绝'
+        result.player.forEach((targetPl: Player) =>
+          Gui.sendModal(
+            targetPl,
+            '传送请求',
+            message,
+            (targetPl) => {
+              targetPl.runcmd(command);
+              out.success(`请求已被接受`);
+            },
+            () => out.error(`请求已被拒绝`),
+            '接受',
+            '拒绝'
+          )
         );
 
       if (!pl) return;

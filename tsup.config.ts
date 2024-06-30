@@ -25,7 +25,7 @@ export default defineConfig(() => {
   writeFileSync(resolve(PLUGIN_DIR, 'manifest.json'), JSON.stringify(MANIFEST, null, 2));
   return {
     entryPoints: [`./src/${PLUGIN_NAME}.ts`],
-    minify: true,
+    // minify: true,
     outDir: PLUGIN_DIR,
     banner: {
       js: `

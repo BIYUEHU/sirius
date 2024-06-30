@@ -14,8 +14,8 @@ const Plugin = new Loader(
   CONFIG,
   [
     ['gui', Gui],
-    ['helper', Helper],
-    ['teleport', Teleport]
+    ['helper', Helper]
+    // ['teleport', Teleport]
   ],
   () => {
     // Check update

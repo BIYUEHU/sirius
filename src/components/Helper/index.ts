@@ -79,10 +79,10 @@ export default class Helper extends Component<Config['helper']> {
           type: 'custom',
           title: '私聊',
           elements: [
-            { type: 'dropdown', title: '选择玩家', items: '@players' },
+            { type: 'dropdown', title: '目标玩家', items: '@players' },
             { type: 'input', title: '发送内容' }
           ],
-          action: `msg "{0}" "${1}"`
+          action: `msg "{0}" "{1}"`
         })
       //const playersList = mc.getOnlinePlayers().map((pl) => pl.realName);
       //const form = mc.newCustomForm().setTitle('私聊').addDropdown('选择玩家', playersList, 0).addInput('发送内容');
@@ -109,6 +109,7 @@ export default class Helper extends Component<Config['helper']> {
     noticesetCmd.mandatory('content', ParamType.String);
     noticesetCmd.overload(['content']);
     noticesetCmd.setCallback((_, { player: pl }, { success }, { content }) => {
+      logger.info(`公告设置：${content}`);
       this.saveNotice(content);
       success('公告设置成功');
     });
@@ -128,7 +129,7 @@ export default class Helper extends Component<Config['helper']> {
       (_, { player: pl }) =>
         pl &&
         mc.runcmdEx(
-          `tellraw "@a" {"rawtext":[{"text":"${pl.realName} 我在这里：§a${pl.pos.x} ${pl.pos.y} ${pl.pos.z}！"}]}`
+          `tellraw @a {"rawtext":[{"text":"${pl.realName} 我在这里：§a${pl.pos.x} ${pl.pos.y} ${pl.pos.z}！"}]}`
         )
     );
   }

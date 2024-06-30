@@ -3,7 +3,8 @@ export default abstract class Component<C extends Record<string, any> | never = 
 
   public constructor(config: C) {
     this.config = config;
-    this.register();
+    /* Don't apply function in the original class */
+    // this.register();
     mc.listen('onServerStarted', () => this.cmds.forEach((cmd) => cmd.setup()));
   }
 

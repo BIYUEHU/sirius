@@ -46,13 +46,13 @@ const CONFIG_DEFAULT = {
   teleport: {
     enabled: true,
     tpaCmdEnabled: true,
-    tpaExpireTime: 90,
+    tpaExpireTime: 20,
     tprCmdEnabled: true,
     tprMaxDistance: 10000,
     tprMinDistance: 1000,
     tprSafeHeight: 120,
     homeCmdEnabled: true,
-    homeMaxCount: 20,
+    homeMaxCount: 15,
     warpCmdEnabled: true,
     transferCmdEnabled: true
   },
@@ -63,6 +63,7 @@ const CONFIG_DEFAULT = {
   },
   manger: {
     enabled: true,
+    mangerCmdEnabled: true,
     vanishCmdEnabled: true,
     runasCmdEnabled: true,
     banCmdEnabled: true,
@@ -70,14 +71,17 @@ const CONFIG_DEFAULT = {
     skickCmdEnabled: true,
     crashCmdEnabled: true,
     stopCmdEnabled: true,
-    infoCmdEnabled: true,
-    gameruleGuiEnabled: true
+    infoCmdEnabled: true
   },
   land: {
-    enabled: true
+    /* Base on money component */
+    enabled: true,
+    buyPrice: 10,
+    sellPrice: 8
   },
   money: {
     enabled: true,
+    default: 0,
     scoreboardName: 'money',
     syncLLMoney: true,
     payRate: 80,
@@ -107,9 +111,10 @@ const DATA_DEFAULT = {
     hash: 0,
     list: [] as string[]
   },
-  denylist: {} as Record<string, string>
+  denylist: {} as Record<string, string>,
+  bans: {} as Record<string, { reason: string; time: number }>
 };
 
 export type Data = typeof DATA_DEFAULT;
 
-export const DATA = new AutoJsonConfigFile(DATA_PATH, DATA_DEFAULT);
+export const DATA = new AutoJsonConfigFile(DATA_FILE, DATA_DEFAULT);

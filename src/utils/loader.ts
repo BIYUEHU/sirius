@@ -60,7 +60,7 @@ export default class Loader {
 
     this.components.forEach((component, name) => {
       const config = this.config?.get(name);
-      if (!config || config.enabled) new component(config ?? {});
+      if (!config || config.enabled) new component(config ?? {}).register();
     });
 
     logger.info(`Sirius Loaded v${version.join('.')}`);
