@@ -54,16 +54,6 @@ interface GuiCustomData {
 
 type GuiData = GuiModalData | GuiSimpleData | GuiCustomData;
 
-// mc.listen('onUseItemOn', (pl, item) => {
-//   if (item.type !== 'minecraft:clock') return;
-//   if (playerUseClockCache.has(pl.xuid)) return;
-//   playerUseClockCache.add(pl.xuid);
-//   setTimeout(() => playerUseClockCache.delete(pl.xuid), 500);
-//   send(pl);
-// });
-
-// private playerUseClockCache: Set<string> = new Set();
-
 export default class Gui extends Component<Config['gui']> {
   public static sendModal(
     pl: Player,

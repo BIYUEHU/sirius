@@ -17,18 +17,21 @@ const CONFIG_DEFAULT = {
     decode: true,
     lang: 'zh_CN' as 'en_US' | 'ja_JP' | 'zh_CN' | 'zh_TW'
   },
+  hunter: {},
+  shop: {},
   utils: {
     enabled: true,
+    itemsUseOn: {
+      'minecraft:clock': 'menu'
+    } as Record<string, string>,
     joinWelcomeEnabled: true,
     joinWelcomeMsg: 'Welcome to the server, %player%!',
     motdDynastyEnabled: true,
     motdMsgs: ['server motd!'],
     motdInterval: 5,
-    itemsUseOn: {
-      'minecraft:clock': 'menu'
-    } as Record<string, string>,
     chatFormatEnabled: true,
-    chatFormat: '%player%: %message%'
+    chatFormat: '%player%: %message%',
+    sidebarEnabled: true
   },
   helper: {
     enabled: true,
@@ -38,8 +41,6 @@ const CONFIG_DEFAULT = {
     clockCmdEnabled: true,
     msguiCmdEnabled: true,
     hereCmdEnabled: true,
-    vanishCmdEnabled: true,
-    runasCmdEnabled: true,
     mapCmdEnabled: true
   },
   teleport: {
@@ -62,10 +63,12 @@ const CONFIG_DEFAULT = {
   },
   manger: {
     enabled: true,
+    vanishCmdEnabled: true,
+    runasCmdEnabled: true,
     banCmdEnabled: true,
     cloudBlackCheckEnabled: true,
     skickCmdEnabled: true,
-    gcrashCmdEnabled: true,
+    crashCmdEnabled: true,
     stopCmdEnabled: true,
     infoCmdEnabled: true,
     gameruleGuiEnabled: true
@@ -76,7 +79,10 @@ const CONFIG_DEFAULT = {
   money: {
     enabled: true,
     scoreboardName: 'money',
-    syncLLMoney: true
+    syncLLMoney: true,
+    payRate: 80,
+    shopCmdEnabled: true,
+    hunterEnabled: true
   }
 };
 

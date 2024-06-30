@@ -18,6 +18,9 @@ const Plugin = new Loader(
     ['teleport', Teleport]
   ],
   () => {
+    // Check update
+
+    // Record xuids
     mc.listen('onJoin', ({ xuid, realName }) => {
       const xuids = DATA.get('xuids');
       if (!(xuid in xuids)) xuids[xuid] = realName;

@@ -57,7 +57,10 @@ export default class Helper extends Component<Config['helper']> {
       out.success('已传送至上次死亡点');
     });
 
-    mc.listen('onPlayerDie', (pl) => this.playerDieCache.set(pl.xuid, pl.pos));
+    mc.listen('onPlayerDie', (pl) => {
+      this.playerDieCache.set(pl.xuid, pl.pos);
+      pl.tell(`你在 ${pl.pos.x} ${pl.pos.y} ${pl.pos.z} 死了，使用 /back 可返回死亡地点`);
+    });
   }
 
   private suicide() {
@@ -69,12 +72,22 @@ export default class Helper extends Component<Config['helper']> {
   private msgui() {
     const msguiCmd = this.cmd('msgui', '打开私聊界面', PermType.Any);
     msguiCmd.overload([]);
-    msguiCmd.setCallback((_, { player: pl }) => {
-      if (!pl) return;
-      const playersList = mc.getOnlinePlayers().map((pl) => pl.realName);
-      const form = mc.newCustomForm().setTitle('私聊').addDropdown('选择玩家', playersList, 0).addInput('发送内容');
-      pl.sendForm(form, (_, data) => data && pl.runcmd(`msg "${playersList[data[0]]}" "${data[1]}`));
-    });
+    msguiCmd.setCallback(
+      (_, { player: pl }) =>
+        pl &&
+        Gui.send(pl, {
+          type: 'custom',
+          title: '私聊',
+          elements: [
+            { type: 'dropdown', title: '选择玩家', items: '@players' },
+            { type: 'input', title: '发送内容' }
+          ],
+          action: `msg "{0}" "${1}"`
+        })
+      //const playersList = mc.getOnlinePlayers().map((pl) => pl.realName);
+      //const form = mc.newCustomForm().setTitle('私聊').addDropdown('选择玩家', playersList, 0).addInput('发送内容');
+      //pl.sendForm(form, (_, data) => data && pl.runcmd(`msg "${playersList[data[0]]}" "${data[1]}`));
+    );
   }
 
   private clock() {
@@ -82,8 +95,8 @@ export default class Helper extends Component<Config['helper']> {
     clockCmd.overload([]);
     clockCmd.setCallback((_, { player: pl }) => {
       if (!pl) return;
-      mc.runcmdEx(`clear "${pl.realName}" clock 0 1`);
-      mc.runcmdEx(`give "${pl.realName}" clock 1`);
+      pl.clearItem('minecraft:clock', 1);
+      pl.giveItem(mc.newItem('minecraft:clock', 1)!);
     });
   }
 
@@ -96,7 +109,6 @@ export default class Helper extends Component<Config['helper']> {
     noticesetCmd.mandatory('content', ParamType.String);
     noticesetCmd.overload(['content']);
     noticesetCmd.setCallback((_, { player: pl }, { success }, { content }) => {
-      if (!pl) return;
       this.saveNotice(content);
       success('公告设置成功');
     });
