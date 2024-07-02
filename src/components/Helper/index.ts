@@ -1,12 +1,16 @@
-import { Config, DATA, Data, NOTICE_FILE } from '../../constants';
+import { Config, DATA, NOTICE_FILE } from '../../constants';
 import Component from '../../utils/component';
 import Gui from '../Gui/index';
 
 export default class Helper extends Component<Config['helper']> {
+  private getHash(content: string) {
+    return content.split('').reduce((hash, char) => hash + char.charCodeAt(0), 0);
+  }
+
   private loadNotice() {
     const noticeContent = File.readFrom(NOTICE_FILE);
     if (!noticeContent) return null;
-    return [noticeContent, noticeContent.split('').reduce((hash, char) => hash + char.charCodeAt(0), 0)] as const;
+    return [noticeContent, this.getHash(noticeContent)] as const;
   }
 
   private saveNotice(notice: string) {
@@ -82,7 +86,7 @@ export default class Helper extends Component<Config['helper']> {
             { type: 'dropdown', title: '目标玩家', items: '@players' },
             { type: 'input', title: '发送内容' }
           ],
-          action: `msg "{0}" "{1}"`
+          action: `/msg "{0}" "{1}"`
         })
       //const playersList = mc.getOnlinePlayers().map((pl) => pl.realName);
       //const form = mc.newCustomForm().setTitle('私聊').addDropdown('选择玩家', playersList, 0).addInput('发送内容');
@@ -108,10 +112,12 @@ export default class Helper extends Component<Config['helper']> {
     const noticesetCmd = this.cmd('noticeset', '设置公告', PermType.GameMasters);
     noticesetCmd.mandatory('content', ParamType.String);
     noticesetCmd.overload(['content']);
-    noticesetCmd.setCallback((_, { player: pl }, { success }, { content }) => {
-      logger.info(`公告设置：${content}`);
+    noticesetCmd.setCallback((_, { player: pl }, out, { content }) => {
       this.saveNotice(content);
-      success('公告设置成功');
+      const noticed = DATA.get('noticed');
+      noticed.hash = this.getHash(content);
+      noticed.list = [];
+      out.success('公告设置成功');
     });
 
     mc.listen('onJoin', (pl) => {
@@ -128,8 +134,8 @@ export default class Helper extends Component<Config['helper']> {
     hereCmd.setCallback(
       (_, { player: pl }) =>
         pl &&
-        mc.runcmdEx(
-          `tellraw @a {"rawtext":[{"text":"${pl.realName} 我在这里：§a${pl.pos.x} ${pl.pos.y} ${pl.pos.z}！"}]}`
+        mc.runcmd(
+          `tellraw @a {"rawtext":[{"text":"${pl.realName} 我在这里：§a${Math.floor(pl.pos.x)} ${Math.floor(pl.pos.y)} ${Math.floor(pl.pos.z)}！"}]}`
         )
     );
   }

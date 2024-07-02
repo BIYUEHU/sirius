@@ -6,3 +6,4 @@ Sirius.js
 node_modules
 *.env
 *.tgz
+.vscode

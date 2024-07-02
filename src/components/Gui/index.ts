@@ -79,8 +79,7 @@ export default class Gui extends Component<Config['gui']> {
   public static hanldeMagicExpression<T>(
     pl: Player,
     expr: T | ModalCallback | SimpleCallback | CustomCallback,
-    data: (string | number)[] = [],
-    isAction: boolean = false
+    data: (string | number)[] = []
   ) {
     if (!expr) return;
     if (typeof expr === 'function') {
@@ -93,40 +92,33 @@ export default class Gui extends Component<Config['gui']> {
     let content = expr.slice(1);
 
     data.forEach((d, index) => {
-      content = content.replace(new RegExp(`\\{${index}\\}`, 'g'), d.toString());
+      content = content.replace(new RegExp(`\\{${index}\\}`, 'g'), String(d));
     });
 
-    if (isAction) {
-      switch (prefix) {
-        case '/':
-          return pl.runcmd(content);
-        case '~':
-          return mc.runcmd(content);
-        case '#':
-          return pl.tell(content);
-        default:
-          if (['@', '$'].includes(prefix)) break;
-          return pl.runcmd(`gui open "${expr}"`);
-      }
-
-      switch (prefix) {
-        case '@':
-          if (content === 'players') return mc.getOnlinePlayers().map((p) => p.realName);
-          return logger.error(`unknown magic expression shortcut: ${prefix}`);
-        case '$':
-          try {
-            return ll.eval(content);
-          } catch (e) {
-            return logger.error(`magic expression eval error: ${(e as Error).message}`);
-          }
-        default:
-          return `${prefix}${content}`;
-      }
+    switch (prefix) {
+      case '/':
+        return pl.runcmd(content);
+      case '~':
+        return mc.runcmd(content);
+      case '#':
+        return pl.tell(content);
+      case '@':
+        if (content === 'players') return mc.getOnlinePlayers().map((p) => p.realName);
+        return logger.error(`unknown magic expression shortcut: ${prefix}`);
+      case '$':
+        try {
+          return ll.eval(content);
+        } catch (e) {
+          return logger.error(`magic expression eval error: ${(e as Error).message}`);
+        }
+      default:
+        if (this.list.has(expr)) return this.send(pl, this.list.get(expr)!);
+        return logger.error(`cannot find gui data for "${expr}"`);
     }
   }
 
   public static send(pl: Player, guiData: GuiData) {
-    const handle = <T>(par: T) => (par === undefined ? undefined : this.hanldeMagicExpression(pl, par));
+    const handle = <T, A extends any[]>(par: T, data?: A) => this.hanldeMagicExpression(pl, par, data);
 
     const { title, type } = guiData;
 
@@ -139,12 +131,12 @@ export default class Gui extends Component<Config['gui']> {
           .setContent(content)
           .addButton(confirmButton ?? '确认')
           .addButton(cancelButton ?? '取消');
-        pl.sendForm(form, (pl, id) => this.hanldeMagicExpression(pl, id === 0 ? confirmAction : cancelAction));
+        pl.sendForm(form, (_, id) => handle(id === 0 ? confirmAction : cancelAction));
         return;
       }
       pl.sendModalForm(title, content, confirmButton ?? '确认', cancelButton ?? '取消', (pl, result) => {
-        if (result) this.hanldeMagicExpression(pl, confirmAction);
-        else if (cancelAction) this.hanldeMagicExpression(pl, cancelAction);
+        if (result) handle(confirmAction);
+        else if (cancelAction) handle(cancelAction);
       });
       return;
     }
@@ -152,35 +144,46 @@ export default class Gui extends Component<Config['gui']> {
     if (type === 'custom') {
       if (guiData.onlyOp && !pl.isOP()) return pl.tell('§c你没有权限使用该 GUI§r');
       let value: string[];
-      const els: { type: GuiCustomData['elements'][number]['type']; value?: string[] }[] = [];
+      const els: string[][] = [];
       const { elements, action } = guiData;
       const form = mc.newCustomForm();
       elements.forEach((el) => {
         switch (el.type) {
           case 'label':
             form.addLabel(handle(el.text));
-            els.push({ type: 'label' });
+            els.push([]);
             break;
           case 'input':
-            form.addInput(el.title, handle(el.placeholder), handle(el.default));
-            els.push({ type: 'input' });
+            form.addInput(
+              el.title,
+              el.placeholder !== undefined ? handle(el.placeholder) : '',
+              el.default !== undefined ? handle(el.default) : ''
+            );
+            els.push([]);
             break;
           case 'switch':
-            form.addSwitch(title, handle(el.default));
-            els.push({ type: 'switch' });
+            form.addSwitch(title, el.default !== undefined ? handle(el.default) : false);
+            els.push([]);
             break;
           case 'dropdown':
             value = Array.isArray(el.items) ? el.items : handle(el.items);
-            form.addDropdown(title, value, handle(el.default));
-            els.push({ type: 'dropdown', value });
+            form.addDropdown(title, value);
+            els.push(value);
             break;
           case 'slider':
-            form.addSlider(title, handle(el.min), handle(el.max), handle(el.step), handle(el.default));
-            els.push({ type: 'slider' });
+            form.addSlider(
+              title,
+              handle(el.min),
+              handle(el.max),
+              el.step !== undefined ? handle(el.step) : 1,
+              el.default !== undefined ? handle(el.default) : handle(el.min)
+            );
+            els.push([]);
             break;
           case 'stepSlider':
             value = Array.isArray(el.items) ? el.items : handle(el.items);
-            form.addStepSlider(title, value, handle(el.default));
+            form.addStepSlider(title, value, el.default !== undefined ? handle(el.default) : 0);
+            els.push(value);
             break;
           default:
             logger.error(`unknown custom gui element type ${type}`);
@@ -193,9 +196,7 @@ export default class Gui extends Component<Config['gui']> {
         this.hanldeMagicExpression(
           pl,
           action,
-          data.map(({ type, value }) =>
-            ['dropdown', 'stepSlider'].includes(type) ? handle(value) : type === 'input' ? value : value
-          )
+          data.map((value, index) => els[index][value] ?? value)
         );
       });
       return;
@@ -208,24 +209,17 @@ export default class Gui extends Component<Config['gui']> {
     const btn = buttons?.filter(({ onlyOp }) => !onlyOp || pl.isOP()) ?? [];
 
     btn.forEach(({ text, icon }) => form.addButton(text, icon ?? ''));
-    pl.sendForm(form, (pl, id) => {
+    pl.sendForm(form, (_, id) => {
       if (typeof id !== 'number') return;
       const { action } = btn[id];
       if (!action) return;
-      this.hanldeMagicExpression(pl, action, [id]);
+      handle(action, [id]);
     });
   }
 
-  public register() {
-    this.getAll();
-    this.gui();
-    if (this.config.menuCmdEnabled) this.menu();
-  }
+  private static readonly list: Map<string, GuiData> = new Map();
 
-  private readonly list: Map<string, GuiData> = new Map();
-
-  private getAll(path: string = GUI_PATH) {
-    logger.info(this, JSON.stringify(this), this.list);
+  public static getAll(path: string = GUI_PATH) {
     const { list } = this;
     File.getFilesList(path).forEach((filename) => {
       const dir = `${path}/${filename}`;
@@ -269,8 +263,13 @@ export default class Gui extends Component<Config['gui']> {
     });
   }
 
+  public register() {
+    this.gui();
+    if (this.config.menuCmdEnabled) this.menu();
+  }
+
   private send(pl: Player, formName: string = 'index') {
-    const guiData = formName ? this.list.get(formName) : undefined;
+    const guiData = formName ? Gui.list.get(formName) : undefined;
     if (!guiData) {
       if (formName) logger.error(`cannot find gui data file for ${formName}`);
       return false;
@@ -290,8 +289,8 @@ export default class Gui extends Component<Config['gui']> {
     guiCmd.overload(['OpenAction', 'name']);
     guiCmd.setCallback((_, { player: pl }, out, result) => {
       if (result.action === 'reload') {
-        this.list.forEach((_, key) => this.list.delete(key));
-        this.getAll();
+        Gui.list.forEach((_, key) => Gui.list.delete(key));
+        Gui.getAll();
         out.success('GUI 数据已重新加载');
         return;
       }
@@ -307,3 +306,5 @@ export default class Gui extends Component<Config['gui']> {
     menuCmd.setCallback((_, { player: pl }) => pl && this.send(pl));
   }
 }
+
+Gui.getAll();

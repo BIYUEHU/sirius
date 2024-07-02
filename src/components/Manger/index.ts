@@ -94,7 +94,7 @@ export default class Manger extends Component<Config['manger']> {
               { title: '目标玩家', type: 'dropdown', items: '@players' },
               { title: '运行指令', type: 'input' }
             ],
-            action: 'runas "$1" "$2"'
+            action: 'runas "{0}" "{1}"'
           });
           break;
         default:

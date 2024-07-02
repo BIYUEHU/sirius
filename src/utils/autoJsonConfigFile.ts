@@ -1,8 +1,9 @@
-export default class AutoJsonConfigFile<T extends Record<string, any> = Record<string, any>> extends JsonConfigFile {
+export default class AutoJsonConfigFile<T extends Record<string, any> = Record<string, any>> {
+  private origin: JsonConfigFile;
   private proxyCache: WeakMap<object, any> = new WeakMap();
 
   private createProxy(key: string, value: any): any {
-    if (typeof value !== 'object' || value === null) return value;
+    if ((typeof value !== 'object' && !Array.isArray(value)) || value === null) return value;
     if (this.proxyCache.has(value)) return this.proxyCache.get(value);
 
     const self = this;
@@ -12,18 +13,12 @@ export default class AutoJsonConfigFile<T extends Record<string, any> = Record<s
         return self.createProxy(`${key}.${String(prop)}`, result);
       },
       set(target: any, prop: string | symbol, newValue: any): boolean {
-        const result = Reflect.set(target, prop, newValue);
-        if (result) {
-          self.set(key, target);
-        }
-        return result;
+        Reflect.set(target, prop, newValue);
+        return self.set(key, target);
       },
       deleteProperty(target: any, prop: string | symbol): boolean {
-        const result = Reflect.deleteProperty(target, prop);
-        if (result) {
-          self.set(key, target);
-        }
-        return result;
+        Reflect.deleteProperty(target, prop);
+        return self.set(key, target);
       }
     });
 
@@ -34,20 +29,20 @@ export default class AutoJsonConfigFile<T extends Record<string, any> = Record<s
   public readonly defaults?: T;
 
   public constructor(filePath: string, defaults?: T) {
-    super(filePath, JSON.stringify(defaults || {}, null, 2));
+    this.origin = new JsonConfigFile(filePath, JSON.stringify(defaults || {}, null, 2));
     this.defaults = defaults;
   }
 
   public get<K extends keyof T>(key: K): T[K] {
-    const value = super.get(String(key));
+    const value = this.origin.get(String(key));
     return this.createProxy(String(key), value) as T[K];
   }
 
   public set<K extends keyof T>(key: K, value: T[K]) {
-    return super.set(String(key), value);
+    return this.origin.set(String(key), value);
   }
 
   public delete<K extends keyof T>(key: K) {
-    return super.delete(String(key));
+    return this.origin.delete(String(key));
   }
 }
