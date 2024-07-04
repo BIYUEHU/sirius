@@ -118,3 +118,8 @@ const DATA_DEFAULT = {
 export type Data = typeof DATA_DEFAULT;
 
 export const DATA = new AutoJsonConfigFile(DATA_FILE, DATA_DEFAULT);
+
+export const enum UPDATE {
+  REPO = 'https://github.com/biyuehu/sirius',
+  META = 'https://hotaru.icu/api/agent/?url=https://raw.githubusercontent.com/biyuehu/sirius/master/package.json'
+}

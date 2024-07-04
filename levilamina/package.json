@@ -1,0 +1,38 @@
+{
+  "name": "levilamina",
+  "version": "2.14.1",
+  "description": "LeviLamina (LiteLoaderBDS) JavaScript/TypeScript Plugins Types Declarations",
+  "types": "types/index.d.ts",
+  "keywords": [
+    "levilamina",
+    "liteloader",
+    "plugins",
+    "types",
+    "minecraft",
+    "bedrock",
+    "LeviLamina",
+    "LiteLoaderBDS",
+    "bds"
+  ],
+  "files": [
+    "README.md",
+    "types"
+  ],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier-eslint": "^15.0.1"
+  },
+  "author": "LiteLScript-Dev",
+  "license": "ISC",
+  "homepage": "https://lse.liteldev.com/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LiteLDev/HelperLib.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LiteLDev/HelperLib/issues"
+  }
+}
