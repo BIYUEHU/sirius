@@ -1,3 +1,3 @@
-import Plugin from './index';
+import Plugin from './index'
 
-Plugin.load();
+Plugin.load()

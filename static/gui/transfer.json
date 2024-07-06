@@ -1,0 +1,24 @@
+{
+  "$schema": "../../schema/gui.json",
+  "type": "custom",
+  "onlyOp": true,
+  "title": "跨服传送",
+  "elements": [
+    {
+      "type": "dropdown",
+      "items": "@players",
+      "title": "目标玩家"
+    },
+    {
+      "type": "input",
+      "title": "目标服务器 IP 地址"
+    },
+    {
+      "type": "input",
+      "title": "目标服务器端口",
+      "default": "19132",
+      "placeholder": "选填，默认 19132"
+    }
+  ],
+  "action": "/transfers \"{0}\" {1} {2}"
+}

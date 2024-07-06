@@ -1,16 +1,23 @@
-import AutoJsonConfigFile from './utils/autoJsonConfigFile';
+import pkg from '../package.json'
+import AutoJsonConfigFile from './utils/autoJsonConfigFile'
 
-export const PLUGIN_PATH = './plugins/Sirius';
+export const PLUGIN_NAME = 'Sirius'
 
-export const DATA_PATH = `${PLUGIN_PATH}/data`;
+export const PLUGIN_DESCRIPTION = '下一代最全面的服务器基础&综合性功能插件'
 
-export const GUI_PATH = `${PLUGIN_PATH}/gui`;
+export const PLUGIN_VERSION = pkg.version.split('.').map(Number)
 
-export const CONFIG_FILE = `${PLUGIN_PATH}/config.json`;
+export const PLUGIN_PATH = `./plugins/${PLUGIN_NAME}`
 
-export const DATA_FILE = `${DATA_PATH}/data.json`;
+export const DATA_PATH = `${PLUGIN_PATH}/data`
 
-export const NOTICE_FILE = `${DATA_PATH}/notice.txt`;
+export const GUI_PATH = `${PLUGIN_PATH}/gui`
+
+export const CONFIG_FILE = `${PLUGIN_PATH}/config.json`
+
+export const DATA_FILE = `${DATA_PATH}/data.json`
+
+export const NOTICE_FILE = `${DATA_PATH}/notice.txt`
 
 const CONFIG_DEFAULT = {
   global: {
@@ -88,17 +95,17 @@ const CONFIG_DEFAULT = {
     shopCmdEnabled: true,
     hunterEnabled: true
   }
-};
+}
 
-export type Config = typeof CONFIG_DEFAULT;
+export type Config = typeof CONFIG_DEFAULT
 
-export const CONFIG = new AutoJsonConfigFile(CONFIG_FILE, CONFIG_DEFAULT);
+export const CONFIG = new AutoJsonConfigFile(CONFIG_FILE, CONFIG_DEFAULT)
 
 interface Position {
-  dimension: 0 | 1 | 2;
-  x: number;
-  y: number;
-  z: number;
+  dimension: 0 | 1 | 2
+  x: number
+  y: number
+  z: number
 }
 
 const DATA_DEFAULT = {
@@ -113,11 +120,11 @@ const DATA_DEFAULT = {
   },
   denylist: {} as Record<string, string>,
   bans: {} as Record<string, { reason: string; time: number }>
-};
+}
 
-export type Data = typeof DATA_DEFAULT;
+export type Data = typeof DATA_DEFAULT
 
-export const DATA = new AutoJsonConfigFile(DATA_FILE, DATA_DEFAULT);
+export const DATA = new AutoJsonConfigFile(DATA_FILE, DATA_DEFAULT)
 
 export const enum UPDATE {
   REPO = 'https://github.com/biyuehu/sirius',

@@ -1,9 +1,10 @@
 {
+  "$schema": "../../schema/gui.json",
   "title": "传送系统",
   "buttons": [
     {
       "text": "跨服传送",
-      "action": "/transfer"
+      "action": "`transfer"
     },
     {
       "text": "随机传送",
@@ -15,15 +16,15 @@
     },
     {
       "text": "个人传送点",
-      "action": "/home gui"
+      "action": "/home ls"
     },
     {
       "text": "公共传送点",
-      "action": "/warp gui"
+      "action": "/warp ls"
     },
     {
       "text": "返回",
-      "action": "index"
+      "action": "`index"
     }
   ]
 }

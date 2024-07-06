@@ -1,18 +1,19 @@
 {
+  "$schema": "../../schema/gui.json",
   "title": "§l§6Little§3Craft§2Ex§d菜单",
   "content": "菜单可通过钟表点地或 /menu 或 /cd 指令打开",
   "buttons": [
     {
       "text": "新手向导",
-      "action": "newer"
+      "action": "`newer"
     },
     {
       "text": "助手系统",
-      "action": "helper"
+      "action": "`helper"
     },
     {
       "text": "传送系统",
-      "action": "teleport"
+      "action": "`teleport"
     },
     {
       "text": "经济系统",
@@ -20,16 +21,16 @@
     },
     {
       "text": "领地系统",
-      "action": "land"
+      "action": "`land"
     },
     {
       "text": "管理系统",
-      "action": "/optool",
+      "action": "/manger",
       "onlyOp": true
     },
     {
       "text": "关于",
-      "action": "about"
+      "action": "`about"
     },
     {
       "text": "退出",

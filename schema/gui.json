@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "oneOf": [
+    {
+      "$ref": "#/definitions/GuiModalData"
+    },
+    {
+      "$ref": "#/definitions/GuiSimpleData"
+    },
+    {
+      "$ref": "#/definitions/GuiCustomData"
+    }
+  ],
+  "definitions": {
+    "GuiModalData": {
+      "type": "object",
+      "properties": {
+        "advanced": {
+          "type": "boolean",
+          "default": false
+        },
+        "type": {
+          "type": "string",
+          "enum": ["modal"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "confirmButton": {
+          "type": "string"
+        },
+        "cancelButton": {
+          "type": "string"
+        },
+        "confirmAction": {
+          "type": "string"
+        },
+        "cancelAction": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["type", "title", "content", "confirmAction"]
+    },
+    "GuiSimpleData": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["simple"],
+          "default": "simple"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "buttons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              },
+              "icon": {
+                "type": ["string", "null"]
+              },
+              "onlyOp": {
+                "default": false
+              }
+            },
+            "required": ["text", "action"]
+          }
+        }
+      },
+      "required": ["title"]
+    },
+    "GuiCustomData": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["custom"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/LabelElement"
+              },
+              {
+                "$ref": "#/definitions/InputElement"
+              },
+              {
+                "$ref": "#/definitions/SwitchElement"
+              },
+              {
+                "$ref": "#/definitions/DropdownElement"
+              },
+              {
+                "$ref": "#/definitions/SliderElement"
+              },
+              {
+                "$ref": "#/definitions/StepSliderElement"
+              }
+            ]
+          }
+        },
+        "action": {
+          "type": "string"
+        },
+        "onlyOp": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["title", "elements", "action"]
+    },
+    "LabelElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["label"]
+        },
+        "text": {
+          "type": ["string"]
+        }
+      },
+      "required": ["type", "text"]
+    },
+    "InputElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["input"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": ["string", "null"]
+        },
+        "default": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["type", "title"]
+    },
+    "SwitchElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["switch"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "default": {
+          "type": ["boolean", "string"],
+          "default": false
+        }
+      },
+      "required": ["type", "title"]
+    },
+    "DropdownElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["dropdown"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "items": {
+          "type": ["array", "string"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "type": ["number", "null"]
+        }
+      },
+      "required": ["type", "title", "items"]
+    },
+    "SliderElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["slider"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "min": {
+          "type": ["number", "string"]
+        },
+        "max": {
+          "type": ["number", "string"]
+        },
+        "step": {
+          "type": ["number", "string", "null"]
+        },
+        "default": {
+          "type": ["number", "string", "null"]
+        }
+      },
+      "required": ["type", "title", "min", "max"]
+    },
+    "StepSliderElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["stepSlider"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "items": {
+          "type": ["array", "string"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "type": ["number", "string", "null"]
+        }
+      },
+      "required": ["type", "title", "items"]
+    }
+  }
+}

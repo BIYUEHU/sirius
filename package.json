@@ -1,22 +1,15 @@
 {
-  "name": "sirius",
+  "name": "siriusu",
   "description": "sirius plugin base on levilamina",
-  "version": "1.0.0",
-  "private": true,
+  "version": "1.0.0-beta",
   "license": "GPL-3.0",
   "author": "Arimura <biyuehuya@gmail.com>",
   "scripts": {
     "build": "tsup",
     "dev": "nodemon --watch",
-    "lint": "eslint \"src/*.ts\" --fix",
-    "format": "prettier --config .prettierrc \"src/*.ts\" --write",
-    "version": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
+    "release": "tsup --define.release true && conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
   },
-  "files": [
-    "./dist/**/*.js",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["./dist/**/*.js", "schema", "static", "README.md", "LICENSE"],
   "homepage": "https://github.com/biyuehu/sirius#readme",
   "bugs": {
     "url": "https://github.com/biyuehu/sirius/issues"
@@ -25,13 +18,9 @@
     "type": "git",
     "url": "https://github.com/biyuehu/sirius.git"
   },
-  "keywords": [
-    "sirius",
-    "plugin",
-    "base",
-    "levilamina"
-  ],
+  "keywords": ["sirius", "plugin", "levilamina", "minecraft", "bedrock", "minecraft-bedrock", "bds", "server"],
   "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
     "@types/node": "^20.14.1",
     "@types/shelljs": "^0.8.15",
     "conventional-changelog-cli": "^4.1.0",
@@ -51,16 +40,8 @@
   },
   "nodemonConfig": {
     "exec": "pnpm build && pnpx tsx scripts/bds.ts",
-    "ext": "ts,json",
-    "ignore": [
-      "package.json",
-      "tsconfig.json",
-      "tsup.config.ts",
-      "scripts",
-      "server",
-      "tests",
-      "*.test.ts"
-    ]
+    "ext": "ts",
+    "ignore": ["tsup.config.ts", "scripts", "server", "tests", "*.test.ts"]
   },
   "levilamina": {
     "type": "lse-quickjs",

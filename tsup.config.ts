@@ -1,15 +1,15 @@
-import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { defineConfig } from 'tsup';
-import sh from 'shelljs';
-import { config } from 'dotenv';
+import { readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { defineConfig } from 'tsup'
+import sh from 'shelljs'
+import { config } from 'dotenv'
 
-config();
+config()
 
-const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
-const PLUGIN_NAME = `${pkg.name.charAt(0).toUpperCase()}${pkg.name.slice(1)}`;
-const PLUGIN_DIR = resolve(__dirname, process.env.BDS_PATH ?? 'server', `plugins/${PLUGIN_NAME}/`);
-const PLUGIN_STATIC_DIR = resolve(__dirname, 'static');
+const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'))
+const PLUGIN_NAME = /* `${pkg.name.charAt(0).toUpperCase()}${pkg.name.slice(1)}` */ 'Sirius'
+const PLUGIN_DIR = resolve(__dirname, process.env.BDS_PATH ?? 'server', `plugins/${PLUGIN_NAME}/`)
+const PLUGIN_STATIC_DIR = resolve(__dirname, 'static')
 const MANIFEST = {
   entry: `${PLUGIN_NAME}.js`,
   name: PLUGIN_NAME,
@@ -18,15 +18,17 @@ const MANIFEST = {
   ...(pkg.author ? { author: Array.isArray(pkg.author) ? pkg.author.join(', ') : pkg.author } : {}),
   ...(pkg.license ? { license: pkg.license } : {}),
   ...(pkg.levilamina ?? {})
-};
+}
 
-export default defineConfig(() => {
-  sh.cp('-R', PLUGIN_STATIC_DIR, PLUGIN_DIR);
-  writeFileSync(resolve(PLUGIN_DIR, 'manifest.json'), JSON.stringify(MANIFEST, null, 2));
+export default defineConfig(({ define }) => {
+  const isRelease = define?.release !== undefined
+  const DIR = isRelease ? resolve('dist') : PLUGIN_DIR
+  if (!isRelease) sh.cp('-R', `${PLUGIN_STATIC_DIR}/*`, `${DIR}*`)
+  writeFileSync(resolve(DIR, 'manifest.json'), JSON.stringify(MANIFEST, null, 2))
   return {
     entryPoints: [`./src/${PLUGIN_NAME}.ts`],
-    // minify: true,
-    outDir: PLUGIN_DIR,
+    minify: !!isRelease,
+    outDir: DIR,
     banner: {
       js: `
 /**
@@ -40,5 +42,5 @@ export default defineConfig(() => {
  */
 `
     }
-  };
-});
+  }
+})

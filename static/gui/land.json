@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/gui.json",
   "title": "领地系统",
   "content": "圈地流程：\n1.新建领地\n2.站在领地某个角落选点 a，在另一个角落选点 b\n3.购买或放弃",
   "buttons": [
@@ -28,7 +29,7 @@
     },
     {
       "text": "返回",
-      "action": "index"
+      "action": "`index"
     }
   ]
 }

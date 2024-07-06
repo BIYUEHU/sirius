@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/gui.json",
   "title": "助手系统",
   "buttons": [
     {
@@ -27,7 +28,7 @@
     },
     {
       "text": "返回",
-      "action": "index"
+      "action": "`index"
     }
   ]
 }
