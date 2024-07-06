@@ -24,8 +24,6 @@ const CONFIG_DEFAULT = {
     decode: true,
     lang: 'zh_CN' as 'en_US' | 'ja_JP' | 'zh_CN' | 'zh_TW'
   },
-  hunter: {},
-  shop: {},
   utils: {
     enabled: true,
     itemsUseOn: {
@@ -38,7 +36,8 @@ const CONFIG_DEFAULT = {
     motdInterval: 5,
     chatFormatEnabled: true,
     chatFormat: '%player%: %message%',
-    sidebarEnabled: true
+    sidebarEnabled: true,
+    safeCmdEnabled: true
   },
   helper: {
     enabled: true,
@@ -88,13 +87,26 @@ const CONFIG_DEFAULT = {
   },
   money: {
     enabled: true,
-    default: 0,
+    // default: 0,
     scoreboardName: 'money',
     syncLLMoney: true,
-    payRate: 80,
+    // payRate: 80,
     shopCmdEnabled: true,
     hunterEnabled: true
-  }
+  },
+  hunter: [
+    { entityId: 'minecraft:villager', price: 100 },
+    { entityId: 'minecraft:zombie', price: [100, 200] }
+  ] as Array<{ entityId: string; price: number | [number, number] }>,
+  shop: {
+    默认分类: [
+      { icon: 'texture/items/diamond', itemId: 'minecraft:diamond', text: '钻石', price: 100, type: 'buy' },
+      { icon: 'texture/items/gold_ingot', itemId: 'minecraft:gold_ingot', text: '黄金', price: 500, type: 'sell' }
+    ]
+  } as Record<
+    string,
+    Array<{ icon?: string; text: string; count?: number; itemId: string; price: number; type: 'buy' | 'sell' }>
+  >
 }
 
 export type Config = typeof CONFIG_DEFAULT
@@ -119,7 +131,8 @@ const DATA_DEFAULT = {
     list: [] as string[]
   },
   denylist: {} as Record<string, string>,
-  bans: {} as Record<string, { reason: string; time: number }>
+  bans: {} as Record<string, { reason: string; time: number }>,
+  safety: false
 }
 
 export type Data = typeof DATA_DEFAULT
