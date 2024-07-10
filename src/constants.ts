@@ -82,8 +82,9 @@ const CONFIG_DEFAULT = {
   land: {
     /* Base on money component */
     enabled: true,
-    buyPrice: 10,
-    sellPrice: 8
+    maxBlockCount: 900000,
+    buyPrice: 0.5,
+    destPrice: 0.4
   },
   money: {
     enabled: true,
@@ -125,7 +126,10 @@ const DATA_DEFAULT = {
   tpasEnableList: [] as string[],
   homes: {} as Record<string, Record<string, Position>>,
   warps: {} as Record<string, Position>,
-  lands: {} as Record<string, Record<string, { start: Position; end: Position; allowlist: string[] }>>,
+  lands: {} as Record<
+    string,
+    Record<string, { start: Position; end: Position; allowlist: string[]; leaveMsg: string; welcomeMsg: string }>
+  >,
   noticed: {
     hash: 0,
     list: [] as string[]

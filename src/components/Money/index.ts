@@ -51,10 +51,8 @@ export default class Money extends Component<Config['money']> {
                   if (!item) return logger.error(`错误的物品标识符 ${itemId}`)
 
                   if (type === 'buy') {
-                    const result = money.get(pl.xuid) - price
-                    if (result < 0) return out.error(`你没有足够的金币 ${text}！`)
-
-                    money.set(pl.xuid, result)
+                    if (money.get(pl.xuid) < price) return out.error(`没有足够的金币 ${price}！`)
+                    money.reduce(pl.xuid, price)
                     pl.giveItem(item)
                     return out.success(
                       `成功购买了 ${text}${count && count > 1 ? ` x ${count}` : ''}，消费了 ${price} 金币`

@@ -1,5 +1,6 @@
 import Component from './component'
 import AutoJsonConfigFile from './autoJsonConfigFile'
+import { DATA } from '../constants'
 
 interface LoaderMeta {
   name: string
@@ -64,5 +65,13 @@ export default class Loader {
     })
 
     logger.info(`Sirius Loaded v${version.join('.')}`)
+  }
+
+  protected getXuid(playerName: string) {
+    return Object.values(DATA.get('xuids')).find((name) => playerName === name)
+  }
+
+  protected getPlayerName(xuid: string) {
+    return DATA.get('xuids')[xuid] as String | undefined
   }
 }

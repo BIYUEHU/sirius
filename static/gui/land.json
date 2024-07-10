@@ -28,6 +28,11 @@
       "action": "/land gui"
     },
     {
+      "text": "OP 管理",
+      "action": "/land mgr",
+      "onlyOp": true
+    },
+    {
       "text": "返回",
       "action": "`index"
     }

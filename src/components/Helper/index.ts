@@ -1,6 +1,7 @@
 import { Config, DATA, NOTICE_FILE } from '../../constants'
 import { TargetEntity, betterTell } from '../../utils/betterTell'
 import Component from '../../utils/component'
+import { ObjPosToStr, PosToObj } from '../../utils/position'
 import Gui from '../Gui/index'
 
 export default class Helper extends Component<Config['helper']> {
@@ -136,11 +137,7 @@ export default class Helper extends Component<Config['helper']> {
     hereCmd.overload([])
     hereCmd.setCallback(
       (_, { player: pl }) =>
-        pl &&
-        betterTell(
-          `${pl.realName} 我在这里：§a${Math.floor(pl.pos.x)} ${Math.floor(pl.pos.y)} ${Math.floor(pl.pos.z)}§c！`,
-          TargetEntity.ALL
-        )
+        pl && betterTell(`${pl.realName} 我在这里：§a${ObjPosToStr(PosToObj(pl.pos))}§c！`, TargetEntity.ALL)
     )
   }
 }
