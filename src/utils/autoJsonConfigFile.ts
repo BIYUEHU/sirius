@@ -31,8 +31,9 @@ export default class AutoJsonConfigFile<T extends Record<string, any> = Record<s
   public readonly defaults?: T
 
   public constructor(filePath: string, defaults?: T) {
-    this.origin = new JsonConfigFile(filePath, JSON.stringify(defaults || {}, null, 2))
+    this.origin = new JsonConfigFile(filePath)
     this.defaults = defaults
+    this.origin.write(JSON.stringify(defaults || {}, null, 2))
   }
 
   public get<K extends keyof T>(key: K): T[K] {

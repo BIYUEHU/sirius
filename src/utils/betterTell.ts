@@ -8,5 +8,7 @@ export const enum TargetEntity {
 
 export function betterTell(message: string, target: TargetEntity | string | Player) {
   const targetSelector = typeof target === 'object' ? target.realName : target
-  return mc.runcmd(`tellraw "${targetSelector}" {"rawtext":[{"text":"${message}"}]}`)
+  return mc.runcmd(
+    `tellraw ${targetSelector.startsWith('@') ? targetSelector : `"${targetSelector}"`} {"rawtext":[{"text":"${message}"}]}`
+  )
 }

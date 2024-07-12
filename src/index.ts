@@ -1,7 +1,9 @@
 import pkg from '../package.json'
 import Gui from './components/Gui/index'
 import Helper from './components/Helper/index'
+import Land from './components/Land/index'
 import Manger from './components/Manger/index'
+import Money from './components/Money/index'
 import Teleport from './components/Teleport/index'
 import Utils from './components/Utils/index'
 import { CONFIG, DATA, PLUGIN_DESCRIPTION, PLUGIN_NAME, PLUGIN_VERSION, UPDATE } from './constants'
@@ -41,7 +43,9 @@ const Plugin = new Loader(
     ['helper', Helper],
     ['teleport', Teleport],
     ['utils', Utils],
-    ['manger', Manger]
+    ['manger', Manger],
+    ['money', Money],
+    ['land', Land]
   ],
   () => {
     // Check update

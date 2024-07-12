@@ -1,3 +1,5 @@
+import { DATA } from '../constants'
+
 export default abstract class Component<C extends Record<string, any> | never = never> {
   protected readonly config: C
 
@@ -19,4 +21,12 @@ export default abstract class Component<C extends Record<string, any> | never = 
   })
 
   public abstract register(): void
+
+  protected getXuid(playerName: string) {
+    return Object.values(DATA.get('xuids')).find((name) => playerName === name)
+  }
+
+  protected getPlayerName(xuid: string) {
+    return DATA.get('xuids')[xuid] as String | undefined
+  }
 }

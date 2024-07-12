@@ -1,6 +1,10 @@
 import pkg from '../package.json'
 import AutoJsonConfigFile from './utils/autoJsonConfigFile'
 
+function mergeJsonFileData<T extends Record<string, any>>(data: T, filepath: string): T {
+  return Object.assign(data, file.exists(filepath) ? JSON.parse(file.readFrom(filepath) ?? '{}') : {})
+}
+
 export const PLUGIN_NAME = 'Sirius'
 
 export const PLUGIN_DESCRIPTION = '下一代最全面的服务器基础&综合性功能插件'
@@ -19,7 +23,7 @@ export const DATA_FILE = `${DATA_PATH}/data.json`
 
 export const NOTICE_FILE = `${DATA_PATH}/notice.txt`
 
-const CONFIG_DEFAULT = {
+const ORIGIN_CONFIG_DEFAULT = {
   global: {
     decode: true,
     lang: 'zh_CN' as 'en_US' | 'ja_JP' | 'zh_CN' | 'zh_TW'
@@ -96,13 +100,13 @@ const CONFIG_DEFAULT = {
     hunterEnabled: true
   },
   hunter: [
-    { entityId: 'minecraft:villager', price: 100 },
+    { entityId: 'minecraft:villager_v2', price: 100 },
     { entityId: 'minecraft:zombie', price: [100, 200] }
   ] as Array<{ entityId: string; price: number | [number, number] }>,
   shop: {
     默认分类: [
-      { icon: 'texture/items/diamond', itemId: 'minecraft:diamond', text: '钻石', price: 100, type: 'buy' },
-      { icon: 'texture/items/gold_ingot', itemId: 'minecraft:gold_ingot', text: '黄金', price: 500, type: 'sell' }
+      { icon: 'textures/items/diamond.png', itemId: 'minecraft:diamond', text: '钻石', price: 100, type: 'buy' },
+      { icon: 'textures/items/gold_ingot.png', itemId: 'minecraft:gold_ingot', text: '黄金', price: 500, type: 'sell' }
     ]
   } as Record<
     string,
@@ -110,7 +114,9 @@ const CONFIG_DEFAULT = {
   >
 }
 
-export type Config = typeof CONFIG_DEFAULT
+const CONFIG_DEFAULT = mergeJsonFileData(ORIGIN_CONFIG_DEFAULT, CONFIG_FILE)
+
+export type Config = typeof ORIGIN_CONFIG_DEFAULT
 
 export const CONFIG = new AutoJsonConfigFile(CONFIG_FILE, CONFIG_DEFAULT)
 
@@ -121,7 +127,7 @@ interface Position {
   z: number
 }
 
-const DATA_DEFAULT = {
+const ORIGIN_DATA_DEFAULT = {
   xuids: {} as Record<string, String>,
   tpasEnableList: [] as string[],
   homes: {} as Record<string, Record<string, Position>>,
@@ -136,10 +142,13 @@ const DATA_DEFAULT = {
   },
   denylist: {} as Record<string, string>,
   bans: {} as Record<string, { reason: string; time: number }>,
-  safety: false
+  safe: {
+    status: false
+  }
 }
 
-export type Data = typeof DATA_DEFAULT
+const DATA_DEFAULT = mergeJsonFileData(ORIGIN_DATA_DEFAULT, DATA_FILE)
+export type Data = typeof ORIGIN_DATA_DEFAULT
 
 export const DATA = new AutoJsonConfigFile(DATA_FILE, DATA_DEFAULT)
 

@@ -1,6 +1,5 @@
-import { CONFIG, Config, DATA } from '../../constants'
+import { CONFIG, Config } from '../../constants'
 import Component from '../../utils/component'
-import { ObjToPos, PosToObj } from '../../utils/position'
 import Gui from '../Gui/index'
 
 export default class Money extends Component<Config['money']> {
@@ -20,6 +19,7 @@ export default class Money extends Component<Config['money']> {
       if (!pl) return
       const list = CONFIG.get('hunter')
       if (list.length === 0) return
+      logger.info(`mob ${mob.type} died, hunter enabled`)
       const hunter = list.find((h) => h.entityId === mob.type)
       if (!hunter) return
       const price = Array.isArray(hunter.price)
@@ -31,7 +31,8 @@ export default class Money extends Component<Config['money']> {
   }
 
   private shopCmd() {
-    const shopCmd = this.cmd('shop', '§6商店系统§r', PermType.Any)
+    const shopCmd = this.cmd('shop', '商店系统', PermType.Any)
+    shopCmd.overload([])
     shopCmd.setCallback((_, { player: pl }, out) => {
       if (!pl) return
       const list = CONFIG.get('shop')
@@ -49,26 +50,21 @@ export default class Money extends Component<Config['money']> {
                 action: () => {
                   const item = mc.newItem(itemId, count ?? 1)
                   if (!item) return logger.error(`错误的物品标识符 ${itemId}`)
-
                   if (type === 'buy') {
-                    if (money.get(pl.xuid) < price) return out.error(`没有足够的金币 ${price}！`)
+                    if (money.get(pl.xuid) < price) return pl.tell(`§c没有足够的金币 ${price}！`)
                     money.reduce(pl.xuid, price)
                     pl.giveItem(item)
-                    return out.success(
-                      `成功购买了 ${text}${count && count > 1 ? ` x ${count}` : ''}，消费了 ${price} 金币`
-                    )
+                    return pl.tell(`成功购买了 ${text}${count && count > 1 ? ` x ${count}` : ''}，消费了 ${price} 金币`)
                   }
 
                   const realityCount = pl.clearItem(itemId, count ?? 1)
                   if (realityCount < (count ?? 1)) {
                     pl.giveItem(item, realityCount)
-                    return out.error(`你没有足够的 ${text}！`)
+                    return pl.tell(`§c你没有足够的 ${text}！`)
                   }
 
                   money.add(pl.xuid, price)
-                  return out.success(
-                    `成功出售了 ${text}${count && count > 1 ? ` x ${count}` : ''}，获得了 ${price} 金币`
-                  )
+                  return pl.tell(`成功出售了 ${text}${count && count > 1 ? ` x ${count}` : ''}，获得了 ${price} 金币`)
                 }
               }))
             })

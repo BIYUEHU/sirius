@@ -58,8 +58,12 @@ export default class Utils extends Component<Config['utils']> {
     safeCmd.overload(['status'])
     safeCmd.overload([])
     safeCmd.setCallback((_, { player: pl }, out, { status }) => {
-      if (status === 'on') return DATA.set('safety', true)
-      if (status === 'off') return DATA.set('safety', false)
+      const safe = DATA.get('safe')
+      if (['on', 'off'].includes(status)) {
+        safe.status = status === 'on'
+        out.success('设置成功')
+        return
+      }
 
       if (!pl) return
       Gui.send(pl, {
@@ -67,15 +71,14 @@ export default class Utils extends Component<Config['utils']> {
         title: '服务器维护状态切换',
         elements: [
           { type: 'label', text: '开启服务器维护后，非管理员将无法进入服务器' },
-          { type: 'switch', title: '维护状态', default: !!DATA.get('safety') }
+          { type: 'switch', title: '维护状态', default: DATA.get('safe').status }
         ],
-        action: (_, status) => {
-          DATA.set('safety', status)
-          out.success('设置成功')
-        }
+        action: (_, __, status) => pl.runcmd(`/safe ${status ? 'on' : 'off'}`)
       })
     })
 
-    mc.listen('onPreJoin', (pl) => DATA.get('safety') && pl.disconnect('服务器维护中，请稍后再试'))
+    mc.listen('onPreJoin', (pl) => {
+      if (DATA.get('safe').status && !pl.isOP()) pl.disconnect('服务器维护中，请稍后再试')
+    })
   }
 }
