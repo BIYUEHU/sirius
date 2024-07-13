@@ -1,11 +1,12 @@
-import { CONFIG, Config } from '../../constants'
+import { CONFIG, type Config } from '../../constants/constants'
 import Component from '../../utils/component'
+import t from '../../utils/t'
 import Gui from '../Gui/index'
 
 export default class Money extends Component<Config['money']> {
   public register() {
     if (!money) {
-      logger.error('当前未安装 LLMoney')
+      logger.error(t`info.money_not_found`)
       return
     }
     if (this.config.hunterEnabled) this.hunter()
@@ -26,7 +27,7 @@ export default class Money extends Component<Config['money']> {
         ? Math.floor(Math.random() * (hunter.price[1] - hunter.price[0] + 1 + hunter.price[0])) + hunter.price[0]
         : hunter.price
       money.add(pl.xuid, price)
-      pl.tell(`击杀 ${mob.type}，获得了 ${price} 金币`)
+      pl.tell(t('info.hunter', mob.type, String(price)))
     })
   }
 

@@ -1,4 +1,4 @@
-export const enum TargetEntity {
+export enum TargetEntity {
   ENTITY = '@e',
   ALL = '@a',
   SELF = '@s',

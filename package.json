@@ -9,7 +9,13 @@
     "dev": "nodemon --watch",
     "release": "tsup --define.release true && conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
   },
-  "files": ["./dist/**/*.js", "schema", "static", "README.md", "LICENSE"],
+  "files": [
+    "./dist/**/*.js",
+    "schema",
+    "static",
+    "README.md",
+    "LICENSE"
+  ],
   "homepage": "https://github.com/biyuehu/sirius#readme",
   "bugs": {
     "url": "https://github.com/biyuehu/sirius/issues"
@@ -18,7 +24,16 @@
     "type": "git",
     "url": "https://github.com/biyuehu/sirius.git"
   },
-  "keywords": ["sirius", "plugin", "levilamina", "minecraft", "bedrock", "minecraft-bedrock", "bds", "server"],
+  "keywords": [
+    "sirius",
+    "plugin",
+    "levilamina",
+    "minecraft",
+    "bedrock",
+    "minecraft-bedrock",
+    "bds",
+    "server"
+  ],
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@types/node": "^20.14.1",
@@ -31,12 +46,18 @@
     "tsup": "^8.1.0"
   },
   "engines": {
-    "node": ">=17.9.0"
+    "node": ">=17.0.0"
   },
   "nodemonConfig": {
     "exec": "pnpm build && pnpx tsx scripts/bds.ts",
     "ext": "ts",
-    "ignore": ["tsup.config.ts", "scripts", "server", "tests", "*.test.ts"]
+    "ignore": [
+      "tsup.config.ts",
+      "scripts",
+      "server",
+      "tests",
+      "*.test.ts"
+    ]
   },
   "levilamina": {
     "type": "lse-quickjs",
@@ -45,5 +66,8 @@
         "name": "legacy-script-engine-quickjs"
       }
     ]
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5"
   }
 }

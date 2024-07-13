@@ -1,5 +1,6 @@
-import { Config, DATA } from '../../constants'
+import { type Config, DATA } from '../../constants/constants'
 import Component from '../../utils/component'
+import t from '../../utils/t'
 import Gui from '../Gui/index'
 
 export default class Manger extends Component<Config['manger']> {
@@ -13,25 +14,29 @@ export default class Manger extends Component<Config['manger']> {
     if (this.config.crashCmdEnabled) this.crash()
     if (this.config.infoCmdEnabled) this.info()
     if (this.config.cloudBlackCheckEnabled) this.cloudBlackCheck()
+    if (this.config.safeCmdEnabled) this.safeCmd()
   }
 
   private manger() {
     const btnList: { id: string; text: string; action: string }[] = []
-    if (this.config.vanishCmdEnabled) btnList.push({ id: 'vanish', text: '设置隐身', action: '/vanish' })
-    if (this.config.skickCmdEnabled) btnList.push({ id: 'skick', text: '踢出玩家', action: '`/manger skick' })
-    if (this.config.crashCmdEnabled) btnList.push({ id: 'crash', text: '强制崩玩家', action: '/manger crash' })
-    if (this.config.infoCmdEnabled) btnList.push({ id: 'info', text: '获取玩家信息', action: '/manger info' })
+    if (this.config.safeCmdEnabled) btnList.push({ id: 'safe', text: t`gui.manger.btn.safe`, action: '/safe' })
+    if (this.config.vanishCmdEnabled) btnList.push({ id: 'vanish', text: t`gui.manger.btn.vanish`, action: '/vanish' })
+    if (this.config.skickCmdEnabled)
+      btnList.push({ id: 'skick', text: t`gui.manger.btn.skick`, action: '`/manger skick' })
+    if (this.config.crashCmdEnabled)
+      btnList.push({ id: 'crash', text: t`gui.manger.btn.crash`, action: '/manger crash' })
+    if (this.config.infoCmdEnabled) btnList.push({ id: 'info', text: t`gui.manger.btn.info`, action: '/manger info' })
     if (this.config.banCmdEnabled)
       btnList.push(
-        { id: 'ban', text: '封禁玩家', action: '/manger ban' },
-        { id: 'unban', text: '解除封禁', action: '/manger unban' },
-        { id: 'banls', text: '查看封禁列表', action: '/ban ls' }
+        { id: 'ban', text: t`gui.manger.btn.ban`, action: '/manger ban' },
+        { id: 'unban', text: t`gui.manger.btn.unban`, action: '/manger unban' },
+        { id: 'banls', text: t`gui.manger.btn.banls`, action: '/ban ls' }
       )
     if (this.config.runasCmdEnabled)
-      btnList.push({ id: 'runas', text: '以指定玩家身份运行命令', action: '/manger runas' })
-    if (this.config.stopCmdEnabled) btnList.push({ id: 'stop', text: '关闭服务器', action: '/stops' })
+      btnList.push({ id: 'runas', text: t`gui.manger.btn.runas`, action: '/manger runas' })
+    if (this.config.stopCmdEnabled) btnList.push({ id: 'stop', text: t`gui.manger.btn.stop`, action: '/stops' })
 
-    const mangerCmd = this.cmd('manger', '管理服务器', PermType.GameMasters)
+    const mangerCmd = this.cmd('manger', t`cmd.manger.description`, PermType.GameMasters)
     mangerCmd.setEnum(
       'Action',
       btnList.map((el) => el.id)
@@ -44,33 +49,33 @@ export default class Manger extends Component<Config['manger']> {
       switch (action) {
         case 'skick':
           Gui.send(pl, {
-            title: '踢出玩家',
+            title: t`gui.skick.title`,
             buttons: mc.getOnlinePlayers().map((pl) => ({ text: pl.realName, action: `/skick "${pl.realName}"` }))
           })
           break
         case 'crash':
           Gui.send(pl, {
-            title: '强制崩玩家',
+            title: t`gui.crash.title`,
             buttons: mc.getOnlinePlayers().map((pl) => ({ text: pl.realName, action: `/crashes "${pl.realName}"` }))
           })
           break
         case 'info':
           Gui.send(pl, {
-            title: '获取玩家信息',
+            title: t`gui.info.title`,
             buttons: mc.getOnlinePlayers().map((pl) => ({ text: pl.realName, action: `/info "${pl.realName}"` }))
           })
           break
         case 'ban':
           Gui.send(pl, {
             type: 'custom',
-            title: '封禁玩家',
+            title: t`gui.ban.title`,
             elements: [
-              { title: '目标玩家', type: 'dropdown', items: '@players' },
-              { title: '封禁 IP', type: 'switch', default: false },
-              { title: '选填：封禁时长（秒）', type: 'input' },
-              { title: '选填：封禁原因', type: 'input' }
+              { title: t`gui.ban.player`, type: 'dropdown', items: '@players' },
+              { title: t`gui.ban.banip`, type: 'switch', default: false },
+              { title: t`gui.ban.time`, type: 'input', default: '0' },
+              { title: t`gui.ban.reason`, type: 'input' }
             ],
-            action: (pl: Player, player: string, banip: Boolean, time?: number, reason?: string) =>
+            action: (pl: Player, player: string, banip: boolean, time?: number, reason?: string) =>
               pl.runcmd(
                 `ban ${banip ? 'banip' : 'ban'} "${player}" ${Number.isNaN(Number(time)) ? Number(time) : 0}${reason ? ` "${reason}"` : ''}`
               )
@@ -81,7 +86,7 @@ export default class Manger extends Component<Config['manger']> {
           break
         case 'unban':
           Gui.send(pl, {
-            title: '解除封禁',
+            title: t`gui.unban.title`,
             buttons: Object.entries(DATA.get('bans')).map(([name, data]) => ({
               text: name,
               action: `/ban unban "${name}"`
@@ -92,37 +97,37 @@ export default class Manger extends Component<Config['manger']> {
         case 'runas':
           Gui.send(pl, {
             type: 'custom',
-            title: '以指定玩家身份运行命令',
+            title: t`gui.runas.title`,
             elements: [
-              { title: '目标玩家', type: 'dropdown', items: '@players' },
-              { title: '运行指令', type: 'input' }
+              { title: t`gui.runas.player`, type: 'dropdown', items: '@players' },
+              { title: t`gui.runas.command`, type: 'input' }
             ],
             action: '/runas "{0}" "{1}"'
           })
           break
         default:
-          Gui.send(pl, { title: '管理服务器', onlyOp: true, buttons: btnList })
+          Gui.send(pl, { title: t`gui.manger.title`, onlyOp: true, buttons: btnList })
       }
     })
   }
 
   private vanish() {
-    const vanishCmd = this.cmd('vanish', '使自己隐身', PermType.GameMasters)
+    const vanishCmd = this.cmd('vanish', t`cmd.vanish.description`, PermType.GameMasters)
     vanishCmd.overload([])
     vanishCmd.setCallback((_, { player: pl }, out) => {
       if (!pl) return
       if (pl.getAllEffects().find((id) => id === 14)) {
         pl.removeEffect(14)
-        out.success('已取消隐身状态')
+        out.success(t`cmd.vanish.msg.off`)
         return
       }
       pl.addEffect(14, 9 * 10 ** 8, 225, false)
-      out.success('已设置隐身状态')
+      out.success(t`cmd.vanish.msg.on`)
     })
   }
 
   private runas() {
-    const runasCmd = this.cmd('runas', '以指定玩家身份运行命令', PermType.GameMasters)
+    const runasCmd = this.cmd('runas', t`cmd.runas.description`, PermType.GameMasters)
 
     runasCmd.mandatory('player', ParamType.String)
     runasCmd.mandatory('command', ParamType.String)
@@ -131,11 +136,11 @@ export default class Manger extends Component<Config['manger']> {
     runasCmd.setCallback((_, __, out, { player, command }) => {
       const target = mc.getPlayer(player)
       if (!target) {
-        out.error('目标玩家不在线')
+        out.error(t`cmd.runas.msg.notFound`)
         return
       }
       target.runcmd(command)
-      out.success(`命令已发送给 ${target.realName}`)
+      out.success(t('cmd.runas.msg.success', target.realName))
     })
   }
 
@@ -156,17 +161,25 @@ export default class Manger extends Component<Config['manger']> {
       }
 
       const { time, reason } = allBans[ip in allBans ? ip : name]
-      pl.kick(
-        `${name in allBans ? '你' : `当前 IP（${ip}）`}已被服务器封禁${time !== 0 ? `到 ${time.toLocaleString()}` : '永久'}${reason ? `\n原因：${reason}` : ''}`
-      )
-      logger.warn(`玩家 ${pl.realName} 存在于本地黑名单中，已被踢出`)
+      const forever = time === 0
+      const reasonStr = reason ? t('info.ban.reason', reason) : ''
+      if (name in allBans) {
+        pl.kick(forever ? t('info.ban.forever', reasonStr) : t('info.ban.time', time.toLocaleString(), reasonStr))
+      } else {
+        pl.kick(
+          forever
+            ? t('info.ban_ip.forever', ip, reasonStr)
+            : t('info.ban_ip.time', ip, time.toLocaleString(), reasonStr)
+        )
+      }
+      logger.warn(t('info.ban.kick', pl.realName))
     }
 
-    const banCmd = this.cmd('ban', '封禁玩家', PermType.GameMasters)
+    const banCmd = this.cmd('ban', t`cmd.ban.description`, PermType.GameMasters)
     banCmd.setEnum('ListAction', ['ls'])
     banCmd.setEnum('UnbanAction', ['unban'])
     banCmd.setEnum('BanAction', ['ban', 'banip'])
-    banCmd.mandatory('action', ParamType.Enum, 'ListAction', 1)
+    banCmd.mandatory('actiZon', ParamType.Enum, 'ListAction', 1)
     banCmd.mandatory('action', ParamType.Enum, 'UnbanAction', 1)
     banCmd.mandatory('action', ParamType.Enum, 'BanAction', 1)
     banCmd.mandatory('player', ParamType.String)
@@ -179,40 +192,62 @@ export default class Manger extends Component<Config['manger']> {
       const allBans = DATA.get('bans')
 
       if (result.action === 'ls') {
-        if (Object.keys(allBans).length === 0) return out.success('当前封禁列表为空')
+        if (Object.keys(allBans).length === 0) return out.success(t`cmd.ban.msg.empty`)
         return out.success(
-          `当前封禁列表:\n ${Object.entries(allBans)
-            .map(
-              ([key, data]) =>
-                `${key.includes('.') ? 'IP' : '玩家'}：${key} 时间：${new Date(data.time).toLocaleString()}${data.reason ? ` 原因：${data.reason}` : ''}`
-            )
-            .join('\n')}`
+          t(
+            'cmd.ban.msg.list',
+            Object.entries(allBans)
+              .map(([key, data]) => {
+                const reasonStr = data.reason ? t('info.ban.reason', data.reason) : ''
+                if (key.includes('.')) {
+                  return data.time === 0
+                    ? t('cmd.ban.msg.item_ip.forever', key, reasonStr)
+                    : t('cmd.ban.msg.item_ip.time', key, new Date(data.time).toLocaleString(), reasonStr)
+                }
+                return data.time === 0
+                  ? t('cmd.ban.msg.item.forever', key, reasonStr)
+                  : t('cmd.ban.msg.item.time', key, new Date(data.time).toLocaleString(), reasonStr)
+              })
+              .join('')
+          )
         )
       }
 
       const { player, time, reason } = result
 
       if (result.action === 'unban') {
-        if (!allBans[player]) return out.error(`目标 ${player} 不在封禁列表`)
+        if (!allBans[player]) return out.error(t`cmd.ban.msg.not_found_2`)
         delete allBans[player]
-        return out.success(`已解除 ${player} 的封禁`)
+        return out.success(t('cmd.ban.msg.unban', player))
       }
 
       const endTime = new Date(Date.now() + time * 1000)
       const targetPl = mc.getPlayer(player)
-      if (result.action === 'banip' && !targetPl) return out.error('目标玩家不在线')
+      if (result.action === 'banip' && !targetPl) return out.error(t`cmd.ban.msg.not_found`)
       allBans[result.action === 'banip' ? targetPl.getDevice().ip : player.toLowerCase()] = {
         time: time ? endTime.getTime() : 0,
         reason
       }
 
+      const reasonStr = reason ? t('info.ban.reason', reason) : ''
       if (targetPl) banKick(targetPl)
+      if (result.action === 'banip') {
+        return out.success(
+          time
+            ? t('cmd.ban.msg.ban_ip.time', player, endTime.toLocaleString(), reasonStr)
+            : t('cmd.ban.msg.ban_ip.forever', player, reasonStr)
+        )
+      }
       return out.success(
-        `已封禁 ${player}${result.action === 'banip' ? `（IP：${targetPl.getDevice().ip}）` : ''} ${time ? `到 ${endTime.toLocaleString()}` : '永久'} ${reason ? ` 原因：${reason}` : ''}`
+        time
+          ? t('cmd.ban.msg.ban.time', player, endTime.toLocaleString(), reasonStr)
+          : t('cmd.ban.msg.ban.forever', player, reasonStr)
       )
     })
 
-    setTimeout(() => mc.getOnlinePlayers().forEach((pl) => banKick(pl)), 10 * 1000)
+    setTimeout(() => {
+      for (const pl of mc.getOnlinePlayers()) banKick(pl)
+    }, 10 * 1000)
     mc.listen('onPreJoin', (pl) => pl && banKick(pl))
   }
 
@@ -221,63 +256,107 @@ export default class Manger extends Component<Config['manger']> {
       network.httpGet(
         `https://api.blackbe.work/openapi/v3/check/?name=${pl.realName}&xuid=${pl.xuid}`,
         (status, result) => {
-          if (status !== 200) return logger.error('云黑接口请求失败，请检查你的网络连接')
+          if (status !== 200) return logger.error(t`cmd.cloudBlackCheck.msg.error`)
           if (JSON.parse(result).status !== 2000) return
-          pl.kick('你已被列入 BlackBe 云黑名单，如有疑问请联系管理员')
-          logger.warn(`玩家 ${pl.realName} 已被列入 BlackBe 云黑名单`)
+          pl.kick(t`cmd.cloudBlackCheck.msg.kick`)
+          logger.warn(t('cmd.cloudBlackCheck.msg.kicked', pl.realName))
         }
       )
     })
   }
 
   private skick() {
-    const skickCmd = this.cmd('skick', '强制踢除玩家', PermType.GameMasters)
+    const skickCmd = this.cmd('skick', t`cmd.skick.description`, PermType.GameMasters)
     skickCmd.mandatory('target', ParamType.String)
     skickCmd.optional('reason', ParamType.String)
     skickCmd.overload(['target', 'reason'])
-    skickCmd.setCallback((_, __, out, { target, reason }) =>
-      mc
-        .getOnlinePlayers()
-        .filter((pl) => pl.realName.toLowerCase().startsWith(target.toLowerCase()))
-        .forEach((pl) => pl.kick(reason) && out.success(`已踢除 ${pl.realName}`))
-    )
+    skickCmd.setCallback((_, __, out, { target, reason }) => {
+      for (const pl of mc.getOnlinePlayers()) {
+        if (!pl.realName.toLowerCase().startsWith(target.toLowerCase())) continue
+        if (reason) pl.kick(reason)
+        out.success(t('cmd.skick.msg', pl.realName))
+      }
+    })
   }
 
   private crash() {
-    const crashCmd = this.cmd('crashes', '强制崩玩家客户端', PermType.GameMasters)
+    const crashCmd = this.cmd('crashes', t`cmd.crash.description`, PermType.GameMasters)
     crashCmd.mandatory('player', ParamType.String)
     crashCmd.overload(['player'])
     crashCmd.setCallback((_, __, out, { player }) =>
       mc.getPlayer(player)
         ? mc.getPlayer(player).crash()
-          ? out.success('客户端崩溃成功')
-          : out.error('客户端崩溃失败')
-        : out.error('目标玩家不在线')
+          ? out.success(t`cmd.crash.msg.success`)
+          : out.error(t`cmd.crash.msg.error`)
+        : out.error(t`cmd.crash.msg.not_found`)
     )
   }
 
   private stop() {
-    const stopCmd = this.cmd('stops', '关闭服务器', PermType.GameMasters)
+    const stopCmd = this.cmd('stops', t`cmd.stop.description`, PermType.GameMasters)
     stopCmd.overload([])
     stopCmd.setCallback((_, __, out) => mc.runcmd('stop'))
   }
 
   private info() {
-    const infoCmd = this.cmd('info', '获取玩家信息', PermType.GameMasters)
+    const infoCmd = this.cmd('info', t`cmd.info.description`, PermType.GameMasters)
     infoCmd.mandatory('player', ParamType.String)
     infoCmd.overload(['player'])
 
     infoCmd.setCallback((_, __, out, { player }) => {
       const target = mc.getPlayer(player)
       if (!target) {
-        out.error('目标玩家不在线')
+        out.error(t`cmd.info.msg.not_found`)
         return
       }
 
-      target.getDevice()
+      const device = target.getDevice()
       out.success(
-        `玩家名：${target.realName}\nXUID：${target.xuid}\nUUID：${target.uuid}\nIP：${target.getDevice().ip}\n系统：${target.getDevice().os}\n输入模式：${target.getDevice().inputMode}\n延迟：${target.getDevice().avgPing}ms\n丢包率：${target.getDevice().avgPacketLoss}%\n连接地址：${target.getDevice().serverAddress}\n客户端 ID：${target.getDevice().clientId}`
+        t(
+          'cmd.info.msg',
+          target.realName,
+          target.xuid,
+          target.uuid,
+          device.ip,
+          device.os,
+          String(device.inputMode),
+          String(device.avgPing),
+          String(device.avgPacketLoss),
+          device.serverAddress,
+          device.clientId
+        )
       )
+    })
+  }
+
+  private safeCmd() {
+    const safeCmd = this.cmd('safe', t`cmd.safe.description`, PermType.GameMasters)
+    safeCmd.setEnum('Status', ['on', 'off'])
+    safeCmd.mandatory('status', ParamType.Enum, 'Status')
+    safeCmd.overload(['status'])
+    safeCmd.overload([])
+    safeCmd.setCallback((_, { player: pl }, out, { status }) => {
+      const safe = DATA.get('safe')
+      if (['on', 'off'].includes(status)) {
+        safe.status = status === 'on'
+        out.success(t`cmd.safe.msg`)
+        return
+      }
+
+      if (!pl) return
+      Gui.send(pl, {
+        type: 'custom',
+        title: t`gui.safe.title`,
+        elements: [
+          { type: 'label', text: t`gui.safe.label` },
+          { type: 'switch', title: t`gui.safe.switch`, default: DATA.get('safe').status }
+        ],
+        action: (_, __, status) => pl.runcmd(`/safe ${status ? 'on' : 'off'}`)
+      })
+    })
+
+    mc.listen('onPreJoin', (pl) => {
+      if (DATA.get('safe').status && !pl.isOP()) pl.disconnect('info.safe_mode')
     })
   }
 }

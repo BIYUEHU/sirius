@@ -1,10 +1,12 @@
-import { GUI_PATH, Config } from '../../constants'
+import { GUI_PATH, type Config } from '../../constants/constants'
 import Component from '../../utils/component'
+import t from '../../utils/t'
 
 type MagicExpr = string
 type MagicExprAction = string
 type ModalCallback = (pl: Player) => void
 type SimpleCallback = (pl: Player, id: []) => void
+// biome-ignore lint:
 type CustomCallback = (pl: Player, ...data: any[]) => void
 
 interface GuiModalData {
@@ -71,8 +73,8 @@ export default class Gui extends Component<Config['gui']> {
       content,
       confirmAction,
       cancelAction,
-      confirmButton: confirmButton ?? '§a确认',
-      cancelButton: cancelButton ?? '§c取消'
+      confirmButton: confirmButton ?? t`gui.confirm`,
+      cancelButton: cancelButton ?? t`gui.cancel`
     })
   }
 
@@ -112,7 +114,8 @@ export default class Gui extends Component<Config['gui']> {
           return logger.error(`magic expression eval error: ${(e as Error).message}`)
         }
       case '`':
-        if (this.list.has(content)) return this.send(pl, this.list.get(content)!)
+        // biome-ignore lint:
+        if (Gui.list.has(content)) return Gui.send(pl, Gui.list.get(content)!)
         return logger.error(`cannot find gui data for "${content}"`)
       default:
         return expr
@@ -120,6 +123,7 @@ export default class Gui extends Component<Config['gui']> {
   }
 
   public static send(pl: Player, guiData: GuiData) {
+    // biome-ignore lint:
     const handle = <T, A extends any[]>(par: T, data?: A) => this.handleMagicExpression(pl, par, data)
 
     const { title, type } = guiData
@@ -131,26 +135,32 @@ export default class Gui extends Component<Config['gui']> {
           .newSimpleForm()
           .setTitle(title)
           .setContent(content)
-          .addButton(confirmButton ?? '确认')
-          .addButton(cancelButton ?? '取消')
+          .addButton(confirmButton ?? t`gui.normal_confirm`)
+          .addButton(cancelButton ?? t`gui.normal_cancel`)
         pl.sendForm(form, (_, id) => handle(id === 0 ? confirmAction : cancelAction))
         return
       }
-      pl.sendModalForm(title, content, confirmButton ?? '确认', cancelButton ?? '取消', (pl, result) => {
-        if (result) handle(confirmAction)
-        else if (cancelAction) handle(cancelAction)
-      })
+      pl.sendModalForm(
+        title,
+        content,
+        confirmButton ?? t`gui.normal_confirm`,
+        cancelButton ?? t`gui.normal_cancel`,
+        (pl, result) => {
+          if (result) handle(confirmAction)
+          else if (cancelAction) handle(cancelAction)
+        }
+      )
       return
     }
 
     if (type === 'custom') {
-      if (guiData.onlyOp && !pl.isOP()) return pl.tell('§c你没有权限使用该 GUI§r')
+      if (guiData.onlyOp && !pl.isOP()) return pl.tell(t`gui.not_op`)
       let value: string[]
       const els: string[][] = []
       const { elements, action } = guiData
       const form = mc.newCustomForm()
       form.setTitle(title)
-      elements.forEach((el) => {
+      for (const el of elements) {
         switch (el.type) {
           case 'label':
             form.addLabel(handle(el.text))
@@ -192,11 +202,11 @@ export default class Gui extends Component<Config['gui']> {
             logger.error(`unknown custom gui element type ${type}`)
             break
         }
-      })
+      }
       pl.sendForm(form, (pl, data) => {
         if (!action) return
         if (!data) return
-        this.handleMagicExpression(
+        Gui.handleMagicExpression(
           pl,
           action,
           data.map((value, index) => els[index][value] ?? value)
@@ -211,7 +221,10 @@ export default class Gui extends Component<Config['gui']> {
     if (content) form.setContent(content)
     const btn = buttons?.filter(({ onlyOp }) => !onlyOp || pl.isOP()) ?? []
 
-    btn.forEach(({ text, icon }) => form.addButton(text, icon ?? ''))
+    for (const { text, icon } of btn) {
+      form.addButton(text, icon ?? '')
+    }
+
     pl.sendForm(form, (_, id) => {
       if (typeof id !== 'number') return
       const { action } = btn[id]
@@ -223,11 +236,11 @@ export default class Gui extends Component<Config['gui']> {
   private static readonly list: Map<string, GuiData> = new Map()
 
   public static getAll(path: string = GUI_PATH) {
-    const { list } = this
-    File.getFilesList(path).forEach((filename) => {
+    const { list } = Gui
+    for (const filename of File.getFilesList(path)) {
       const dir = `${path}/${filename}`
       if (File.checkIsDir(dir)) {
-        this.getAll(dir)
+        Gui.getAll(dir)
         return
       }
 
@@ -249,17 +262,18 @@ export default class Gui extends Component<Config['gui']> {
       }
 
       if (file.type === 'simple' || !file.type) {
-        file.buttons?.forEach((btn) => {
+        if (!file.buttons) return
+        for (const btn of file.buttons) {
           if (btn.action && typeof btn.action === 'string' && btn.action.charAt(0) === '`') {
             const guiName = btn.action.slice(1)
             if (File.exists(`${GUI_PATH}/${guiName}.json`)) return
             logger.error(`cannot find action "${btn.action}" gui file at ${dir}`)
           }
-        })
+        }
       }
 
       list.set(dir.replace(/(.*)\/gui\/(.*)\.json/, '$2'), file)
-    })
+    }
   }
 
   public register() {
@@ -267,7 +281,7 @@ export default class Gui extends Component<Config['gui']> {
     if (this.config.menuCmdEnabled) this.menu()
   }
 
-  private send(pl: Player, formName: string = 'index') {
+  private send(pl: Player, formName = 'index') {
     const guiData = formName ? Gui.list.get(formName) : undefined
     if (!guiData) {
       if (formName) logger.error(`cannot find gui data file for ${formName}`)
@@ -278,7 +292,7 @@ export default class Gui extends Component<Config['gui']> {
   }
 
   private gui() {
-    const guiCmd = this.cmd('gui', '打开指定 GUI 或重装 GUI 数据', PermType.GameMasters)
+    const guiCmd = this.cmd('gui', t`cmd.gui.description`, PermType.GameMasters)
     guiCmd.setEnum('ReloadAction', ['reload'])
     guiCmd.setEnum('OpenAction', ['open'])
     guiCmd.mandatory('action', ParamType.Enum, 'ReloadAction', 1)
@@ -290,16 +304,16 @@ export default class Gui extends Component<Config['gui']> {
       if (result.action === 'reload') {
         Gui.list.forEach((_, key) => Gui.list.delete(key))
         Gui.getAll()
-        out.success('GUI 数据已重新加载')
+        out.success(t`cmd.gui.msg.reload`)
         return
       }
       if (!pl) return
-      if (!this.send(pl, result.name)) out.error('找不到指定 GUI 数据文件')
+      if (!this.send(pl, result.name)) out.error(t`cmd.gui.msg.not_found`)
     })
   }
 
   private menu() {
-    const menuCmd = this.cmd('menu', '打开 GUI 菜单', PermType.Any)
+    const menuCmd = this.cmd('menu', t`cmd.menu.description`, PermType.Any)
     if (this.config.menuCmdAlias) menuCmd.setAlias(this.config.menuCmdAlias)
     menuCmd.overload([])
     menuCmd.setCallback((_, { player: pl }) => pl && this.send(pl))

@@ -1,5 +1,5 @@
-import Component from './component'
-import AutoJsonConfigFile from './autoJsonConfigFile'
+import type Component from './component'
+import type AutoConfigFile from './autoConfigFile'
 
 interface LoaderMeta {
   name: string
@@ -10,14 +10,15 @@ interface LoaderMeta {
   repository?: string
 }
 
-type ComponentConsturctor = new (...args: ConstructorParameters<typeof Component<any>>) => Component<any>
+// biome-ignore lint:
+type ComponentConstructor = new (...args: ConstructorParameters<typeof Component<any>>) => Component<any>
 
-type ComponentData = [string, ComponentConsturctor]
+type ComponentData = [string, ComponentConstructor]
 
 export default class Loader {
   private meta: LoaderMeta
 
-  private config?: AutoJsonConfigFile
+  private config?: AutoConfigFile
 
   private components: Map<ComponentData[0], ComponentData[1]> = new Map()
 
@@ -25,14 +26,15 @@ export default class Loader {
 
   public constructor(
     meta: LoaderMeta,
-    config?: AutoJsonConfigFile,
+    config?: AutoConfigFile,
     components?: ComponentData[],
     fallback: () => void = () => {}
   ) {
     this.meta = meta
     this.config = config
     this.fallback = fallback
-    components?.forEach(([name, component]) => this.components.set(name, component))
+    if (!components) return
+    for (const [name, component] of components) this.components.set(name, component)
   }
 
   public use(name: string, component: ComponentData[1]) {
@@ -45,8 +47,11 @@ export default class Loader {
 
   public load() {
     const { name, description, version } = this.meta
+    // biome-ignore lint:
     delete (this.meta as { name?: unknown }).name
+    // biome-ignore lint:
     delete (this.meta as { description?: unknown }).description
+    // biome-ignore lint:
     delete (this.meta as { version?: unknown }).version
 
     ll.registerPlugin(

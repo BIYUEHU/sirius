@@ -1,4 +1,4 @@
-import { Config, DATA } from '../../constants'
+import { type Config, DATA } from '../../constants/constants'
 import Component from '../../utils/component'
 import { ObjToPos, PosToObj } from '../../utils/position'
 import Gui from '../Gui/index'
@@ -22,7 +22,9 @@ export default class Teleport extends Component<Config['teleport']> {
     transferCmd.overload(['player', 'ip', 'port'])
     transferCmd.setCallback((_, __, out, { ip, port, player }) => {
       out.addMessage(`传送目标到服务器 ${ip} : ${port}`)
-      player.forEach((pl: Player) => pl.transServer(ip, port ?? 19132))
+      for (const pl of player) {
+        pl.transServer(ip, port ?? 19132)
+      }
     })
   }
 
@@ -51,10 +53,10 @@ export default class Teleport extends Component<Config['teleport']> {
 
   private getTpaRunningBySender(target: Player) {
     let callback: undefined | (() => void)
-    this.tpaTargetsRunning.forEach((value) => {
-      if (callback) return
+    for (const value of this.tpaTargetsRunning.values()) {
+      if (callback) continue
       if (value[0] === target.xuid) callback = value[1]
-    })
+    }
     return callback
   }
 
@@ -136,7 +138,7 @@ export default class Teleport extends Component<Config['teleport']> {
         // Auto clear expired tpa
         setTimeout(() => {
           if (!this.tpaTargetsRunning.has(targetPl.xuid)) return
-          const sender = mc.getPlayer(this.tpaTargetsRunning.get(targetPl.xuid)![0])
+          const sender = mc.getPlayer((this.tpaTargetsRunning.get(targetPl.xuid) as [string, () => void])[0])
           if (sender) sender.tell(`传送请求已过期`)
           this.tpaTargetsRunning.delete(targetPl.xuid)
         }, this.config.tpaExpireTime * 1000)
@@ -158,7 +160,7 @@ export default class Teleport extends Component<Config['teleport']> {
       // As receiver
       if (['ac', 'de'].includes(result.action)) {
         if (!this.tpaTargetsRunning.has(pl.xuid)) return out.error('当前没有正在进行的传送请求')
-        const [senderXuid, callback] = this.tpaTargetsRunning.get(pl.xuid)!
+        const [senderXuid, callback] = this.tpaTargetsRunning.get(pl.xuid) as [string, () => void]
         const sender = mc.getPlayer(senderXuid)
         if (result.action === 'ac') {
           callback()

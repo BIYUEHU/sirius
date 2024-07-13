@@ -1,7 +1,6 @@
-import { Config, DATA } from '../../constants'
+import type { Config } from '../../constants/constants'
 import { TargetEntity, betterTell } from '../../utils/betterTell'
 import Component from '../../utils/component'
-import Gui from '../Gui/index'
 
 export default class Utils extends Component<Config['utils']> {
   public register() {
@@ -9,7 +8,6 @@ export default class Utils extends Component<Config['utils']> {
     if (this.config.joinWelcomeEnabled) this.joinWelcome()
     if (this.config.motdDynastyEnabled && this.config.motdMsgs.length > 0) this.motdDynasty()
     if (this.config.chatFormatEnabled) this.chatFormat()
-    if (this.config.safeCmdEnabled) this.safeCmd()
   }
 
   private playerItemsUsing: Set<string> = new Set()
@@ -38,47 +36,17 @@ export default class Utils extends Component<Config['utils']> {
       }
     }
     const motdGen = cycleMotd()
-    setInterval(() => mc.setMotd(motdGen.next().value!), this.config.motdInterval * 1000)
+    setInterval(() => mc.setMotd(motdGen.next().value as string), this.config.motdInterval * 1000)
   }
 
   private chatFormat() {
     mc.listen('onChat', (pl, msg) => {
       betterTell(
+        // TODO: placeholder api
         `${this.config.chatFormat.replace('%player%', pl.realName).replace('%message%', msg)}`,
         TargetEntity.ALL
       )
       return false
-    })
-  }
-
-  private safeCmd() {
-    const safeCmd = this.cmd('safe', '服务器维护状态切换', PermType.GameMasters)
-    safeCmd.setEnum('Status', ['on', 'off'])
-    safeCmd.mandatory('status', ParamType.Enum, 'Status')
-    safeCmd.overload(['status'])
-    safeCmd.overload([])
-    safeCmd.setCallback((_, { player: pl }, out, { status }) => {
-      const safe = DATA.get('safe')
-      if (['on', 'off'].includes(status)) {
-        safe.status = status === 'on'
-        out.success('设置成功')
-        return
-      }
-
-      if (!pl) return
-      Gui.send(pl, {
-        type: 'custom',
-        title: '服务器维护状态切换',
-        elements: [
-          { type: 'label', text: '开启服务器维护后，非管理员将无法进入服务器' },
-          { type: 'switch', title: '维护状态', default: DATA.get('safe').status }
-        ],
-        action: (_, __, status) => pl.runcmd(`/safe ${status ? 'on' : 'off'}`)
-      })
-    })
-
-    mc.listen('onPreJoin', (pl) => {
-      if (DATA.get('safe').status && !pl.isOP()) pl.disconnect('服务器维护中，请稍后再试')
     })
   }
 }

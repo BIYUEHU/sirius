@@ -11,25 +11,13 @@
   },
   "linter": {
     "rules": {
-      "recommended": false,
-      "correctness": {
-        "noInvalidUseBeforeDeclaration": "off",
-        "noUnusedVariables": "off"
-      },
-      "style": {
-        "useBlockStatements": "off"
-      },
-      "suspicious": {
-        "noRedeclare": "off"
-      }
+      "recommended": true
     },
-    "ignore": [
-      "**/*.js",
-      "**/*.d.ts"
-    ]
+    "ignore": ["**/*.js", "**/*.d.ts"]
   },
   "javascript": {
     "formatter": {
+      "enabled": true,
       "jsxQuoteStyle": "double",
       "quoteProperties": "asNeeded",
       "trailingCommas": "none",
@@ -43,10 +31,7 @@
   },
   "overrides": [
     {
-      "include": [
-        "*.ts",
-        "*.tsx"
-      ]
+      "include": ["*.ts", "*.tsx"]
     }
   ]
 }

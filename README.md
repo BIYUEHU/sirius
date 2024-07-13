@@ -21,6 +21,25 @@ LeviLamina 作为一统 BDS Loader 的大型项目，其生态可谓百花齐放
 
 ## 🔎 Install
 
+1. 前往 [GitHub Releases](https://github.com/biyuehu/sirius/releases) 下载构建完毕的发行版本
+2. 解压所有文件解压至 `BDS/plugins/Sirius` 目录下（确保构建好的 JS 文件位于 `BDS/plugins/sirius/Sirius.js`）
+3. 启动 LeviLamina
+
+期望目录结构：
+
+```
+BDS/plugins/sirius/
+  ├── data
+  │  ├── data.json
+  │  ├── notice.txt
+  ├── gui
+  ├── Sirius.js
+  ├── manifest.json
+  └── config.json
+```
+
+> `data` 与 `gui` 文件夹将会在服务器启动时由 Sirius 自动生成，无需手动创建。
+
 ## 🧩 Features
 
 ### Main
@@ -29,8 +48,8 @@ LeviLamina 作为一统 BDS Loader 的大型项目，其生态可谓百花齐放
   - itemsUseOn：自定义物品点击触发指令
   - joinWelcome：玩家进入服务器欢迎信息
   - motdDynasty：服务器动态 Motd 信息循环
-  - chatFormat：自定义玩家聊天信息格式（支持 PAPI）
-  - sidebar：自定义玩家侧边栏（支持 PAPI）
+  - chatFormat：自定义玩家聊天信息格式（支持占位符）
+  - sidebar：自定义玩家侧边栏（支持占位符）
 - 🪜 Helper：帮手系统
   - notice：服务器公告
   - suicide：自杀
@@ -60,6 +79,7 @@ LeviLamina 作为一统 BDS Loader 的大型项目，其生态可谓百花齐放
   - crash：崩溃玩家客户端
   - stop：停止服务器
   - info：玩家信息、数据查询
+  - safe：服务器维护状态切换
 - 🧱 Land：领地系统
 - 💴 Money：经济系统、
   - syncScoreboard：计分板与 LL 经济互相同步（待实现）

@@ -1,5 +1,4 @@
-import { set } from 'shelljs'
-import { Config, DATA, Data } from '../../constants'
+import { type Config, DATA, type Data } from '../../constants/constants'
 import Component from '../../utils/component'
 import { ObjPosToStr, ObjToPos, PosToObj } from '../../utils/position'
 import Gui from '../Gui/index'
@@ -111,30 +110,30 @@ export default class Land extends Component<Config['land']> {
     mc.listen('onChangeDim', (pl) => this.clearCreateLandRunning(pl))
 
     setInterval(() => {
-      mc.getOnlinePlayers().forEach((pl) => {
+      for (const pl of mc.getOnlinePlayers()) {
         const locatedLandCurrent = this.getLocatedLand(pl.feetPos)
         const locatedLandLast = this.locatedLandData.get(pl.xuid)
         const [ownerXuid, landName, land] = locatedLandCurrent ?? []
 
         if (locatedLandCurrent) pl.tell(`当前位于 ${ownerXuid ? this.getPlayerName(ownerXuid) : '???'} 的领地`, 4)
         if ((locatedLandCurrent && locatedLandLast) || (!locatedLandCurrent && !locatedLandLast)) return
-        if (locatedLandCurrent && !locatedLandLast) {
-          if (land!.welcomeMsg) pl.setTitle(land!.welcomeMsg, 2)
+        if (locatedLandCurrent && !locatedLandLast && land) {
+          if (land.welcomeMsg) pl.setTitle(land.welcomeMsg, 2)
           else pl.tell(`你已进入领地 ${landName}`)
-          return this.locatedLandData.set(pl.xuid, land!)
+          return this.locatedLandData.set(pl.xuid, land)
         }
         if (!locatedLandCurrent && locatedLandLast) {
           if (locatedLandLast.leaveMsg) pl.tell(locatedLandLast.leaveMsg)
           return this.locatedLandData.delete(pl.xuid)
         }
-      })
+      }
 
-      this.createLandRunning.forEach((info) => {
-        if (!info.a || !info.b) return
+      for (const info of this.createLandRunning.values()) {
+        if (!info.a || !info.b) continue
         for (const pos of edgePositions([info.a, info.b])) {
           mc.spawnParticle(pos.x, pos.y, pos.z, pos.dimension, 'minecraft:villager_happy')
         }
-      })
+      }
     }, 500)
 
     mc.listen('onAttackBlock', (pl, block) => this.catchPlayerEvent(pl, block.pos))
@@ -190,7 +189,7 @@ export default class Land extends Component<Config['land']> {
       if (['giveup', 'buy', 'set'].includes(result.action)) {
         if (!this.createLandRunning.has(pl.xuid)) return out.error('当前没有正在进行的领地创建')
 
-        const info = this.createLandRunning.get(pl.xuid)!
+        const info = this.createLandRunning.get(pl.xuid) as { name: string; a?: Position; b?: Position }
         /* Buy action part one */
         if (result.action === 'buy' && (!info.a || !info.b)) return out.error('当前领地创建选点还未设置完成')
 
@@ -208,12 +207,12 @@ export default class Land extends Component<Config['land']> {
         /* Buy action part two */
         for (const list of Object.values(allLands)) {
           for (const item of Object.values(list)) {
-            if (!this.hasIntersection([info.a!, info.b!], [item.start, item.end])) continue
+            if (!this.hasIntersection([info.a as Position, info.b as Position], [item.start, item.end])) continue
             return out.error('领地创建失败，选定的领地与已有领地有交叉，请重新创建')
           }
         }
 
-        const blockCount = this.calculateBlockCount([info.a!, info.b!])
+        const blockCount = this.calculateBlockCount([info.a as Position, info.b as Position])
         if (blockCount > this.config.maxBlockCount)
           return out.error(`领地创建失败，领地大小超过 ${this.config.maxBlockCount} 块`)
 
@@ -221,7 +220,13 @@ export default class Land extends Component<Config['land']> {
         if (money.get(pl.xuid) < price) return out.error(`领地创建失败，没有足够的金币 ${price}`)
 
         money.reduce(pl.xuid, price)
-        lands[info.name] = { start: info.a!, end: info.b!, allowlist: [], leaveMsg: '', welcomeMsg: '' }
+        lands[info.name] = {
+          start: info.a as Position,
+          end: info.b as Position,
+          allowlist: [],
+          leaveMsg: '',
+          welcomeMsg: ''
+        }
         return out.success(`领地 ${info.name} 创建成功，花费 ${price} 金币`)
       }
 

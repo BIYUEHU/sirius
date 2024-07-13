@@ -1,15 +1,8 @@
-import pkg from '../package.json'
-import AutoJsonConfigFile from './utils/autoJsonConfigFile'
-
-function mergeJsonFileData<T extends Record<string, any>>(data: T, filepath: string): T {
-  return Object.assign(data, file.exists(filepath) ? JSON.parse(file.readFrom(filepath) ?? '{}') : {})
-}
+import t from '../utils/t'
+import pkg from '../../package.json'
+import AutoConfigFile from '../utils/autoConfigFile'
 
 export const PLUGIN_NAME = 'Sirius'
-
-export const PLUGIN_DESCRIPTION = '下一代最全面的服务器基础&综合性功能插件'
-
-export const PLUGIN_VERSION = pkg.version.split('.').map(Number)
 
 export const PLUGIN_PATH = `./plugins/${PLUGIN_NAME}`
 
@@ -17,13 +10,14 @@ export const DATA_PATH = `${PLUGIN_PATH}/data`
 
 export const GUI_PATH = `${PLUGIN_PATH}/gui`
 
-export const CONFIG_FILE = `${PLUGIN_PATH}/config.json`
+export const LOCALE_PATH = `${PLUGIN_PATH}/locales`
 
-export const DATA_FILE = `${DATA_PATH}/data.json`
+export const CONFIG_FILE = `${PLUGIN_PATH}/config.toml`
 
+export const DATA_FILE = `${DATA_PATH}/data.toml`
 export const NOTICE_FILE = `${DATA_PATH}/notice.txt`
 
-const ORIGIN_CONFIG_DEFAULT = {
+const CONFIG_DEFAULT = {
   global: {
     decode: true,
     lang: 'zh_CN' as 'en_US' | 'ja_JP' | 'zh_CN' | 'zh_TW'
@@ -40,8 +34,7 @@ const ORIGIN_CONFIG_DEFAULT = {
     motdInterval: 5,
     chatFormatEnabled: true,
     chatFormat: '%player%: %message%',
-    sidebarEnabled: true,
-    safeCmdEnabled: true
+    sidebarEnabled: true
   },
   helper: {
     enabled: true,
@@ -81,7 +74,8 @@ const ORIGIN_CONFIG_DEFAULT = {
     skickCmdEnabled: true,
     crashCmdEnabled: true,
     stopCmdEnabled: true,
-    infoCmdEnabled: true
+    infoCmdEnabled: true,
+    safeCmdEnabled: true
   },
   land: {
     /* Base on money component */
@@ -114,11 +108,9 @@ const ORIGIN_CONFIG_DEFAULT = {
   >
 }
 
-const CONFIG_DEFAULT = mergeJsonFileData(ORIGIN_CONFIG_DEFAULT, CONFIG_FILE)
+export type Config = typeof CONFIG_DEFAULT
 
-export type Config = typeof ORIGIN_CONFIG_DEFAULT
-
-export const CONFIG = new AutoJsonConfigFile(CONFIG_FILE, CONFIG_DEFAULT)
+export const CONFIG = new AutoConfigFile(CONFIG_FILE, CONFIG_DEFAULT)
 
 interface Position {
   dimension: 0 | 1 | 2
@@ -127,8 +119,8 @@ interface Position {
   z: number
 }
 
-const ORIGIN_DATA_DEFAULT = {
-  xuids: {} as Record<string, String>,
+const DATA_DEFAULT = {
+  xuids: {} as Record<string, string>,
   tpasEnableList: [] as string[],
   homes: {} as Record<string, Record<string, Position>>,
   warps: {} as Record<string, Position>,
@@ -147,12 +139,15 @@ const ORIGIN_DATA_DEFAULT = {
   }
 }
 
-const DATA_DEFAULT = mergeJsonFileData(ORIGIN_DATA_DEFAULT, DATA_FILE)
-export type Data = typeof ORIGIN_DATA_DEFAULT
+export type Data = typeof DATA_DEFAULT
 
-export const DATA = new AutoJsonConfigFile(DATA_FILE, DATA_DEFAULT)
+export const DATA = new AutoConfigFile(DATA_FILE, DATA_DEFAULT)
 
-export const enum UPDATE {
+export enum UPDATE {
   REPO = 'https://github.com/biyuehu/sirius',
   META = 'https://hotaru.icu/api/agent/?url=https://raw.githubusercontent.com/biyuehu/sirius/master/package.json'
 }
+
+export const PLUGIN_DESCRIPTION = t`plugin.description`
+
+export const PLUGIN_VERSION = pkg.version.split('.').map(Number)

@@ -1,13 +1,17 @@
-import { DATA } from '../constants'
+import { DATA } from '../constants/constants'
 
+// biome-ignore lint:
 export default abstract class Component<C extends Record<string, any> | never = never> {
   protected readonly config: C
 
   public constructor(config: C) {
     this.config = config
+
     /* Don't apply function in the original class */
     // this.register();
-    mc.listen('onServerStarted', () => this.cmds.forEach((cmd) => cmd.setup()))
+    mc.listen('onServerStarted', () => {
+      for (const cmd of this.cmds) cmd.setup()
+    })
   }
 
   private readonly cmds: ReturnType<typeof mc.newCommand>[] = []
@@ -23,10 +27,10 @@ export default abstract class Component<C extends Record<string, any> | never = 
   public abstract register(): void
 
   protected getXuid(playerName: string) {
-    return Object.values(DATA.get('xuids')).find((name) => playerName === name)
+    return Object.values(DATA.get('xuids')).find((name) => playerName === name) ?? 'unknown'
   }
 
   protected getPlayerName(xuid: string) {
-    return DATA.get('xuids')[xuid] as String | undefined
+    return DATA.get('xuids')[xuid] ?? '???'
   }
 }

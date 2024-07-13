@@ -1,7 +1,8 @@
-import { Config, DATA, NOTICE_FILE } from '../../constants'
+import { type Config, DATA, NOTICE_FILE } from '../../constants/constants'
 import { TargetEntity, betterTell } from '../../utils/betterTell'
 import Component from '../../utils/component'
 import { ObjPosToStr, PosToObj } from '../../utils/position'
+import t from '../../utils/t'
 import Gui from '../Gui/index'
 
 export default class Helper extends Component<Config['helper']> {
@@ -33,11 +34,11 @@ export default class Helper extends Component<Config['helper']> {
   private sendNotice(pl: Player) {
     const notice = this.loadNotice()
     if (!notice) {
-      pl.tell('当前服务器未设置公告')
+      pl.tell(t`info.no_notice`)
       return
     }
     const [noticeContent, hash] = notice
-    Gui.sendModal(pl, '公告', noticeContent, (pl) => {
+    Gui.sendModal(pl, t`gui.notice.title`, noticeContent, (pl) => {
       const noticed = DATA.get('noticed')
       if (noticed.hash === hash) {
         if (noticed.list.includes(pl.xuid)) return
@@ -50,45 +51,45 @@ export default class Helper extends Component<Config['helper']> {
   }
 
   private back() {
-    const backCmd = this.cmd('back', '回到上次死亡点', PermType.Any)
+    const backCmd = this.cmd('back', t`cmd.back.description`, PermType.Any)
     backCmd.overload([])
     backCmd.setCallback((_, { player: pl }, out) => {
       if (!pl) return
       const pos = this.playerDieCache.get(pl.xuid)
       if (!pos) {
-        out.error('未能找到上次死亡点')
+        out.error(t`cmd.back.msg.error`)
         return
       }
       pl.teleport(pos)
-      out.success('已传送至上次死亡点')
+      out.success(t`cmd.back.msg.success`)
     })
 
     mc.listen('onPlayerDie', (pl) => {
       this.playerDieCache.set(pl.xuid, pl.pos)
-      pl.tell(
-        `你在 ${Math.floor(pl.pos.x)} ${Math.floor(pl.pos.y)} ${Math.floor(pl.pos.z)} 死了，使用 /back 可返回死亡地点`
-      )
+      pl.tell(t('info.died', ObjPosToStr(PosToObj(pl.pos))))
     })
   }
 
   private suicide() {
-    const suicideCmd = this.cmd('suicide', '自爆', PermType.Any)
+    const suicideCmd = this.cmd('suicide', t`cmd.suicide.description`, PermType.Any)
     suicideCmd.overload([])
-    suicideCmd.setCallback((_, { player: pl }) => pl && pl.kill())
+    suicideCmd.setCallback((_, { player: pl }) => {
+      if (pl) pl.kill()
+    })
   }
 
   private msgui() {
-    const msguiCmd = this.cmd('msgui', '打开私聊界面', PermType.Any)
+    const msguiCmd = this.cmd('msgui', t`cmd.msgui.description`, PermType.Any)
     msguiCmd.overload([])
     msguiCmd.setCallback(
       (_, { player: pl }) =>
         pl &&
         Gui.send(pl, {
           type: 'custom',
-          title: '私聊',
+          title: t`gui.msgui.title`,
           elements: [
-            { type: 'dropdown', title: '目标玩家', items: '@players' },
-            { type: 'input', title: '发送内容' }
+            { type: 'dropdown', title: t`gui.msgui.dropdown`, items: '@players' },
+            { type: 'input', title: t`gui.msgui.input` }
           ],
           action: `/msg "{0}" "{1}"`
         })
@@ -99,21 +100,21 @@ export default class Helper extends Component<Config['helper']> {
   }
 
   private clock() {
-    const clockCmd = this.cmd('clock', '获取钟表', PermType.Any)
+    const clockCmd = this.cmd('clock', t`cmd.clock.description`, PermType.Any)
     clockCmd.overload([])
     clockCmd.setCallback((_, { player: pl }) => {
       if (!pl) return
       pl.clearItem('minecraft:clock', 1)
-      pl.giveItem(mc.newItem('minecraft:clock', 1)!)
+      pl.giveItem(mc.newItem('minecraft:clock', 1) as Item)
     })
   }
 
   private notice() {
-    const noticeCmd = this.cmd('notice', '查看公告', PermType.Any)
+    const noticeCmd = this.cmd('notice', t`cmd.notice.description`, PermType.Any)
     noticeCmd.overload([])
     noticeCmd.setCallback((_, { player: pl }) => pl && this.sendNotice(pl))
 
-    const noticesetCmd = this.cmd('noticeset', '设置公告', PermType.GameMasters)
+    const noticesetCmd = this.cmd('noticeset', t`cmd.noticeset.description`, PermType.GameMasters)
     noticesetCmd.mandatory('content', ParamType.String)
     noticesetCmd.overload(['content'])
     noticesetCmd.setCallback((_, { player: pl }, out, { content }) => {
@@ -121,7 +122,7 @@ export default class Helper extends Component<Config['helper']> {
       const noticed = DATA.get('noticed')
       noticed.hash = this.getHash(content)
       noticed.list = []
-      out.success('公告设置成功')
+      out.success(t`cmd.noticeset.msg`)
     })
 
     mc.listen('onJoin', (pl) => {
@@ -133,11 +134,10 @@ export default class Helper extends Component<Config['helper']> {
   }
 
   private here() {
-    const hereCmd = this.cmd('here', '发送当前坐标', PermType.Any)
+    const hereCmd = this.cmd('here', t`cmd.here.description`, PermType.Any)
     hereCmd.overload([])
-    hereCmd.setCallback(
-      (_, { player: pl }) =>
-        pl && betterTell(`${pl.realName} 我在这里：§a${ObjPosToStr(PosToObj(pl.pos))}§c！`, TargetEntity.ALL)
-    )
+    hereCmd.setCallback((_, { player: pl }) => {
+      if (pl) betterTell(t('info.here', pl.realName, ObjPosToStr(PosToObj(pl.pos))), TargetEntity.ALL)
+    })
   }
 }

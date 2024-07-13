@@ -1,3 +1,5 @@
+import './constants/constants'
+import './constants/template'
 import pkg from '../package.json'
 import Gui from './components/Gui/index'
 import Helper from './components/Helper/index'
@@ -6,13 +8,14 @@ import Manger from './components/Manger/index'
 import Money from './components/Money/index'
 import Teleport from './components/Teleport/index'
 import Utils from './components/Utils/index'
-import { CONFIG, DATA, PLUGIN_DESCRIPTION, PLUGIN_NAME, PLUGIN_VERSION, UPDATE } from './constants'
+import { CONFIG, DATA, PLUGIN_DESCRIPTION, PLUGIN_NAME, PLUGIN_VERSION, UPDATE } from './constants/constants'
 import Component from './utils/component'
 import Loader from './utils/loader'
+import t from './utils/t'
 
-class SiriusApi extends Component<{}> {
+class SiriusApi extends Component<object> {
   public register() {
-    const siriusCmd = this.cmd('sirius', 'Sirius 插件管理', PermType.GameMasters)
+    const siriusCmd = this.cmd('sirius', t`cmd.sirius.description`, PermType.GameMasters)
     siriusCmd.setEnum('Action', ['version', 'reload'])
     siriusCmd.mandatory('action', ParamType.Enum, 'Action', 1)
     siriusCmd.overload(['action'])
@@ -20,10 +23,10 @@ class SiriusApi extends Component<{}> {
       switch (action) {
         case 'reload':
           DATA.reload()
-          return out.success('插件数据重载成功')
+          return out.success(t`cmd.sirius.msg.reload`)
         default:
           return out.success(
-            `§l§9Sirius§r - §2${PLUGIN_DESCRIPTION}\n§r当前版本：§l§a${PLUGIN_VERSION}\n§r项目作者：§l§b${pkg.author}\n§r开原地址：§l§3${pkg.homepage}\n§r开源协议：§l§c${pkg.license}\n§r`
+            t('cmd.sirius.msg.version', PLUGIN_DESCRIPTION, PLUGIN_VERSION, pkg.author, pkg.homepage, pkg.license)
           )
       }
     })
@@ -50,10 +53,10 @@ const Plugin = new Loader(
   () => {
     // Check update
     network.httpGet(UPDATE.META, (status, data) => {
-      if (status !== 200) return logger.error('无法获取更新信息，请检查网络连接')
+      if (status !== 200) return logger.error(t`update.msg.error`)
       const res = JSON.parse(data)
       if (res.version === pkg.version) return null
-      logger.warn(`发现新版本 ${res.version}，当前版本 ${pkg.version}，请前往 ${UPDATE.REPO} 获取最新版本`)
+      logger.warn(t('update.msg.new', res.version, pkg.version, UPDATE.REPO))
     })
 
     // Record xuids

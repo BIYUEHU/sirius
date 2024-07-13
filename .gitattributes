@@ -1,1 +1,2 @@
 levilamina/**/*.d.ts            linguist-detectable=false
+src/**/*.js            linguist-detectable=false

@@ -1,4 +1,4 @@
-import { Data } from '../constants'
+import type { Data } from '../constants/constants'
 
 export function ObjToPos({ x, y, z, dimension }: Data['homes'][string][string]) {
   return new FloatPos(x, y, z, dimension)
