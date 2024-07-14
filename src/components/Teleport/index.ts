@@ -2,6 +2,7 @@ import { type Config, DATA } from '../../constants/constants'
 import Component from '../../utils/component'
 import { ObjToPos, PosToObj } from '../../utils/position'
 import Gui from '../Gui/index'
+import t from '../../utils/t'
 
 export default class Teleport extends Component<Config['teleport']> {
   public register() {
@@ -15,13 +16,13 @@ export default class Teleport extends Component<Config['teleport']> {
   private readonly tpaTargetsRunning: Map<string, [string, () => void]> = new Map()
 
   private transfer() {
-    const transferCmd = this.cmd('transfers', '跨服传送', PermType.GameMasters)
+    const transferCmd = this.cmd('transfers', t`cmd.transfer.description`, PermType.GameMasters)
     transferCmd.mandatory('player', ParamType.Player)
     transferCmd.mandatory('ip', ParamType.String)
     transferCmd.optional('port', ParamType.Int)
     transferCmd.overload(['player', 'ip', 'port'])
     transferCmd.setCallback((_, __, out, { ip, port, player }) => {
-      out.addMessage(`传送目标到服务器 ${ip} : ${port}`)
+      out.addMessage(t('cmd.transfer.msg.transfer', ip, String(port)))
       for (const pl of player) {
         pl.transServer(ip, port ?? 19132)
       }
@@ -29,12 +30,12 @@ export default class Teleport extends Component<Config['teleport']> {
   }
 
   private tpr() {
-    const tprCmd = this.cmd('tpr', '随机传送', PermType.Any)
+    const tprCmd = this.cmd('tpr', t`cmd.tpr.description`, PermType.Any)
     tprCmd.overload([])
     tprCmd.setCallback((_, { player: pl }, out) => {
       if (!pl) return
       if (pl.pos.dimid !== 0) {
-        out.error('你必须在主世界才能使用该命令')
+        out.error(t`cmd.tpr.msg.error.dimension`)
         return
       }
 
@@ -47,7 +48,7 @@ export default class Teleport extends Component<Config['teleport']> {
       )
       pl.teleport(position)
       pl.addEffect(27, 10 * 27, 1, false)
-      out.success(`随机传送至 ${position.toString()}`)
+      out.success(t('cmd.tpr.msg.success', position.toString()))
     })
   }
 
@@ -67,7 +68,7 @@ export default class Teleport extends Component<Config['teleport']> {
   }
 
   private tpa() {
-    const tpaCmd = this.cmd('tpa', '传送请求', PermType.Any)
+    const tpaCmd = this.cmd('tpa', t`cmd.tpa.description`, PermType.Any)
     tpaCmd.setEnum('RequestAction', ['to', 'here'])
     tpaCmd.setEnum('ResponseAction', ['ac', 'de', 'cancel', 'toggle', 'gui_toggle', 'gui'])
     tpaCmd.mandatory('action', ParamType.Enum, 'RequestAction', 1)
@@ -80,15 +81,15 @@ export default class Teleport extends Component<Config['teleport']> {
       const sendTpaModal = (message: string, command: string) =>
         Gui.sendModal(
           mc.getPlayer(result.player),
-          '传送请求',
+          t`gui.tpa.title`,
           message,
           (targetPl) => {
             targetPl.runcmd(command)
-            out.success(`请求已被接受`)
+            out.success(t`cmd.tpa.msg.accepted`)
           },
-          () => out.error(`请求已被拒绝`),
-          '接受',
-          '拒绝'
+          () => out.error(t`cmd.tpa.msg.rejected`),
+          t`gui.tpa.btn.accept`,
+          t`gui.tpa.btn.reject`
         )
       if (!pl) return
 
@@ -98,20 +99,20 @@ export default class Teleport extends Component<Config['teleport']> {
       if (result.action === 'gui') {
         return Gui.send(pl, {
           type: 'custom',
-          title: '传送请求',
+          title: t`gui.tpa.title`,
           elements: [
-            { type: 'dropdown', title: '传送模式', items: ['to', 'here'] },
-            { type: 'dropdown', title: '目标玩家', items: '@players' }
+            { type: 'dropdown', title: t`gui.tpa.dropdown.mode`, items: ['to', 'here'] },
+            { type: 'dropdown', title: t`gui.tpa.dropdown.target`, items: '@players' }
           ],
-          action: `/tpa {0} "{1}"`
+          action: '/tpa {0} "{1}"'
         })
       }
 
       if (result.action === 'gui_toggle') {
         return Gui.send(pl, {
           type: 'custom',
-          title: '传送设置',
-          elements: [{ type: 'switch', title: '屏蔽传送请求', default: enableList.includes(pl.xuid) }],
+          title: t`gui.tpa.settings.title`,
+          elements: [{ type: 'switch', title: t`gui.tpa.settings.block`, default: enableList.includes(pl.xuid) }],
           action: (pl, enabled) => {
             if (enabled === enableList.includes(pl.xuid)) pl.runcmd('tpa toggle')
             pl.runcmd('tpa toggle')
@@ -124,51 +125,50 @@ export default class Teleport extends Component<Config['teleport']> {
         const hasRunning = this.getTpaRunningBySender(pl)
 
         if (result.action === 'cancel') {
-          if (!hasRunning) return out.error('当前没有正在进行的传送请求')
+          if (!hasRunning) return out.error(t`cmd.tpa.msg.error.no_request`)
           this.removeTpaRunningBySender(pl)
-          return out.success(`取消了传送请求`)
+          return out.success(t`cmd.tpa.msg.canceled`)
         }
 
-        if (hasRunning) return out.error('当前已有正在进行的传送请求')
+        if (hasRunning) return out.error(t`cmd.tpa.msg.error.existing_request`)
 
         const targetPl = mc.getPlayer(result.player)
-        if (!targetPl) return out.error('目标玩家不在线')
-        if (enableList.includes(targetPl.xuid)) return out.error('目标玩家已屏蔽传送请求')
+        if (!targetPl) return out.error(t`cmd.tpa.msg.error.player_offline`)
+        if (enableList.includes(targetPl.xuid)) return out.error(t`cmd.tpa.msg.error.blocked`)
 
         // Auto clear expired tpa
         setTimeout(() => {
           if (!this.tpaTargetsRunning.has(targetPl.xuid)) return
           const sender = mc.getPlayer((this.tpaTargetsRunning.get(targetPl.xuid) as [string, () => void])[0])
-          if (sender) sender.tell(`传送请求已过期`)
+          if (sender) sender.tell(t`cmd.tpa.msg.expired`)
           this.tpaTargetsRunning.delete(targetPl.xuid)
         }, this.config.tpaExpireTime * 1000)
 
         if (result.action === 'to') {
-          // add more methods next line
           this.tpaTargetsRunning.set(targetPl.xuid, [pl.xuid, () => pl.teleport(targetPl.pos)])
-          sendTpaModal(`玩家 ${pl.realName} 请求传送到你当前位置`, 'tpa ac')
-          mc.getPlayer(targetPl.xuid).tell(`玩家 ${pl.realName} 请求传送到你当前位置，输入 /tpa ac 接受请求`)
-          return out.success(`已向玩家 ${targetPl.realName} 发送到对方的传送请求`)
+          sendTpaModal(t('cmd.tpa.msg.request.to.req', pl.realName), 'tpa ac')
+          mc.getPlayer(targetPl.xuid).tell(t('cmd.tpa.msg.request.to.notify', pl.realName))
+          return out.success(t('cmd.tpa.msg.sent.to', targetPl.realName))
         }
 
         this.tpaTargetsRunning.set(targetPl.xuid, [pl.xuid, () => targetPl.teleport(pl.pos)])
-        sendTpaModal(`玩家 ${pl.realName} 请求你传送到对方当前位置`, 'tpa ac')
-        mc.getPlayer(targetPl.xuid).tell(`玩家 ${pl.realName} 请求你传送到对方当前位置，输入 /tpa ac 接受请求`)
-        return out.success(`已向玩家 ${targetPl.realName} 发送到对方的传送请求`)
+        sendTpaModal(t('cmd.tpa.msg.request.here.req', pl.realName), 'tpa ac')
+        mc.getPlayer(targetPl.xuid).tell(t('cmd.tpa.msg.request.here.notify', pl.realName))
+        return out.success(t('cmd.tpa.msg.sent.here', targetPl.realName))
       }
 
       // As receiver
       if (['ac', 'de'].includes(result.action)) {
-        if (!this.tpaTargetsRunning.has(pl.xuid)) return out.error('当前没有正在进行的传送请求')
+        if (!this.tpaTargetsRunning.has(pl.xuid)) return out.error(t`cmd.tpa.msg.error.no_request`)
         const [senderXuid, callback] = this.tpaTargetsRunning.get(pl.xuid) as [string, () => void]
         const sender = mc.getPlayer(senderXuid)
         if (result.action === 'ac') {
           callback()
-          out.success(`接受了 ${sender.realName} 的传送请求`)
-          sender.tell(`玩家 ${pl.realName} 接受了你的传送请求`)
+          out.success(t('cmd.tpa.msg.accept.req', sender.realName))
+          sender.tell(t('cmd.tpa.msg.accept.notify', pl.realName))
         } else {
-          out.success(`拒绝了 ${sender.realName} 的传送请求`)
-          sender.tell(`玩家 ${pl.realName} 拒绝了你的传送请求`)
+          out.success(t('cmd.tpa.msg.reject.req', sender.realName))
+          sender.tell(t('cmd.tpa.msg.reject.notify', pl.realName))
         }
         return this.tpaTargetsRunning.delete(pl.xuid)
       }
@@ -178,11 +178,11 @@ export default class Teleport extends Component<Config['teleport']> {
           'tpasEnableList',
           enableList.filter((x) => x !== pl.xuid)
         )
-        return out.error('已取消屏蔽传送请求')
+        return out.error(t`cmd.tpa.msg.unblocked`)
       }
 
       DATA.set('tpasEnableList', [...enableList, pl.xuid])
-      return out.success('已屏蔽传送请求')
+      return out.success(t`cmd.tpa.msg.blocked`)
     })
 
     // Auto clear on players leaving
@@ -193,7 +193,7 @@ export default class Teleport extends Component<Config['teleport']> {
   }
 
   private home() {
-    const homeCmd = this.cmd('home', '个人传送点', PermType.Any)
+    const homeCmd = this.cmd('home', t`cmd.home.description`, PermType.Any)
     homeCmd.setEnum('GuiAction', ['ls', 'gui_add', 'gui_del'])
     homeCmd.setEnum('OptionAction', ['add', 'del', 'go'])
     homeCmd.mandatory('action', ParamType.Enum, 'GuiAction', 1)
@@ -211,16 +211,16 @@ export default class Teleport extends Component<Config['teleport']> {
       // Gui
       if (['gui_del', 'ls'].includes(result.action)) {
         if (result.action === 'ls') {
-          if (Object.keys(homes).length === 0) return out.error('当前没有设置任何传送点')
+          if (Object.keys(homes).length === 0) return out.error(t`cmd.home.msg.error.no_homes`)
           return Gui.send(pl, {
-            title: '个人传送点',
+            title: t`gui.home.title`,
             buttons: Object.keys(homes).map((text) => ({ text, action: `/home go "${text}"` }))
           })
         }
 
         return Gui.send(pl, {
-          title: '删除个人传送点',
-          content: '选择要删除的传送点',
+          title: t`gui.home.delete.title`,
+          content: t`gui.home.delete.content`,
           buttons: Object.keys(homes).map((text) => ({ text, action: `/home del "${text}"` }))
         })
       }
@@ -228,33 +228,33 @@ export default class Teleport extends Component<Config['teleport']> {
       if (result.action === 'gui_add') {
         return Gui.send(pl, {
           type: 'custom',
-          title: '添加个人传送点',
-          elements: [{ type: 'input', title: '名称' }],
-          action: `/home add "{0}"`
+          title: t`gui.home.add.title`,
+          elements: [{ type: 'input', title: t`gui.home.add.name` }],
+          action: '/home add "{0}"'
         })
       }
 
       // Operation
       if (result.action === 'go') {
-        if (!homes[result.home]) return out.error(`个人传送点 ${result.home} 不存在`)
+        if (!homes[result.home]) return out.error(t('cmd.home.msg.error.not_exist', result.home))
         return pl.teleport(ObjToPos(homes[result.home]))
       }
 
       if (result.action === 'add') {
-        if (homes[result.home]) return out.error(`个人传送点 ${result.home} 已存在`)
-        if (Object.keys(homes).length >= this.config.homeMaxCount) return out.error('个人传送点数量已达上限')
+        if (homes[result.home]) return out.error(t('cmd.home.msg.error.already_exist', result.home))
+        if (Object.keys(homes).length >= this.config.homeMaxCount) return out.error(t`cmd.home.msg.error.limit`)
         homes[result.home] = PosToObj(pl.pos)
-        return out.success(`已添加个人传送点 ${result.home}`)
+        return out.success(t('cmd.home.msg.added', result.home))
       }
 
-      if (!homes[result.home]) return out.error(`个人传送点 ${result.home} 不存在`)
+      if (!homes[result.home]) return out.error(t('cmd.home.msg.error.not_exist', result.home))
       delete homes[result.home]
-      return out.success(`已删除个人传送点 ${result.home}`)
+      return out.success(t('cmd.home.msg.deleted', result.home))
     })
   }
 
   private warp() {
-    const warpCmd = this.cmd('warp', '公共传送点', PermType.Any)
+    const warpCmd = this.cmd('warp', t`cmd.warp.description`, PermType.Any)
     warpCmd.setEnum('GuiAction', ['ls', 'gui_add', 'gui_del'])
     warpCmd.setEnum('OptionAction', ['add', 'del', 'go'])
     warpCmd.mandatory('action', ParamType.Enum, 'GuiAction', 1)
@@ -270,16 +270,16 @@ export default class Teleport extends Component<Config['teleport']> {
       // Gui
       if (['gui_del', 'ls'].includes(result.action)) {
         if (result.action === 'ls') {
-          if (Object.keys(warps).length === 0) return out.error('当前没有设置任何传送点')
+          if (Object.keys(warps).length === 0) return out.error(t`cmd.warp.msg.error.no_warps`)
           return Gui.send(pl, {
-            title: '公共传送点',
+            title: t`gui.warp.title`,
             buttons: Object.keys(warps).map((text) => ({ text, action: `/warp go "${text}"` }))
           })
         }
 
         return Gui.send(pl, {
-          title: '删除公共传送点',
-          content: '选择要删除的传送点',
+          title: t`gui.warp.delete.title`,
+          content: t`gui.warp.delete.content`,
           onlyOp: true,
           buttons: Object.keys(warps).map((text) => ({ text, action: `/warp del "${text}"` }))
         })
@@ -288,30 +288,30 @@ export default class Teleport extends Component<Config['teleport']> {
       if (result.action === 'gui_add') {
         return Gui.send(pl, {
           type: 'custom',
-          title: '添加公共传送点',
+          title: t`gui.warp.add.title`,
           onlyOp: true,
-          elements: [{ type: 'input', title: '名称' }],
-          action: `/warp add "{0}"`
+          elements: [{ type: 'input', title: t`gui.warp.add.name` }],
+          action: '/warp add "{0}"'
         })
       }
 
       // Operation
       if (result.action === 'go') {
-        if (!warps[result.warp]) return out.error(`公共传送点 ${result.warp} 不存在`)
+        if (!warps[result.warp]) return out.error(t('cmd.warp.msg.error.not_exist', result.warp))
         return pl.teleport(ObjToPos(warps[result.warp]))
       }
 
-      if (!pl.isOP()) return out.error('你没有权限执行该命令')
+      if (!pl.isOP()) return out.error(t`cmd.warp.msg.error.no_permission`)
 
       if (result.action === 'add') {
-        if (warps[result.warp]) return out.error(`公共传送点 ${result.warp} 已存在`)
+        if (warps[result.warp]) return out.error(t('cmd.warp.msg.error.already_exist', result.warp))
         warps[result.warp] = PosToObj(pl.pos)
-        return out.success(`已添加公共传送点 ${result.warp}`)
+        return out.success(t('cmd.warp.msg.added', result.warp))
       }
 
-      if (!warps[result.warp]) return out.error(`公共传送点 ${result.warp} 不存在`)
+      if (!warps[result.warp]) return out.error(t('cmd.warp.msg.error.not_exist', result.warp))
       delete warps[result.warp]
-      return out.success(`已删除公共传送点 ${result.warp}`)
+      return out.success(t('cmd.warp.msg.deleted', result.warp))
     })
   }
 }

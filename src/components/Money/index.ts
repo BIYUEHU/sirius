@@ -20,7 +20,6 @@ export default class Money extends Component<Config['money']> {
       if (!pl) return
       const list = CONFIG.get('hunter')
       if (list.length === 0) return
-      logger.info(`mob ${mob.type} died, hunter enabled`)
       const hunter = list.find((h) => h.entityId === mob.type)
       if (!hunter) return
       const price = Array.isArray(hunter.price)
@@ -32,40 +31,45 @@ export default class Money extends Component<Config['money']> {
   }
 
   private shopCmd() {
-    const shopCmd = this.cmd('shop', '商店系统', PermType.Any)
+    const shopCmd = this.cmd('shop', t`cmd.shop.description`, PermType.Any)
     shopCmd.overload([])
     shopCmd.setCallback((_, { player: pl }, out) => {
       if (!pl) return
       const list = CONFIG.get('shop')
-      if (Object.keys(list).length === 0) return out.success('商店暂时没有任何商品')
+      if (Object.keys(list).length === 0) return out.success(t`cmd.shop.msg.empty`)
       Gui.send(pl, {
-        title: '商店列表',
+        title: t`gui.shop.title`,
         buttons: Object.entries(list).map(([text, items]) => ({
           text,
           action: () => {
             Gui.send(pl, {
-              title: `§6商店§r：${text}`,
+              title: t('gui.shop.item_list.title', text),
               buttons: items.map(({ icon, price, type, itemId, text, count }) => ({
                 icon,
-                text: `${type === 'buy' ? '§c购买' : '§b出售'}§r：${text}${count && count > 1 ? ` x ${count}` : ''} - §e${price} 金币§r`,
+                text: t(
+                  'gui.shop.item_list.item',
+                  type === 'buy' ? 'gui.shop.item_list.buy' : 'gui.shop.item_list.sell',
+                  text,
+                  String(count)
+                ),
                 action: () => {
                   const item = mc.newItem(itemId, count ?? 1)
-                  if (!item) return logger.error(`错误的物品标识符 ${itemId}`)
+                  if (!item) return logger.error(t('cmd.shop.msg.item_not_found', itemId))
                   if (type === 'buy') {
-                    if (money.get(pl.xuid) < price) return pl.tell(`§c没有足够的金币 ${price}！`)
+                    if (money.get(pl.xuid) < price) return pl.tell(t('cmd.shop.msg.not_enough_money', String(price)))
                     money.reduce(pl.xuid, price)
                     pl.giveItem(item)
-                    return pl.tell(`成功购买了 ${text}${count && count > 1 ? ` x ${count}` : ''}，消费了 ${price} 金币`)
+                    return pl.tell(t('cmd.shop.msg.buy', text, String(count), String(price)))
                   }
 
                   const realityCount = pl.clearItem(itemId, count ?? 1)
                   if (realityCount < (count ?? 1)) {
                     pl.giveItem(item, realityCount)
-                    return pl.tell(`§c你没有足够的 ${text}！`)
+                    return pl.tell(t('cmd.shop.msg.not_enough_item', text))
                   }
 
                   money.add(pl.xuid, price)
-                  return pl.tell(`成功出售了 ${text}${count && count > 1 ? ` x ${count}` : ''}，获得了 ${price} 金币`)
+                  return pl.tell(t('cmd.shop.msg.sell', text, String(count), String(price)))
                 }
               }))
             })

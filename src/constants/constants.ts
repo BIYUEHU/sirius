@@ -28,12 +28,12 @@ const CONFIG_DEFAULT = {
       'minecraft:clock': 'menu'
     } as Record<string, string>,
     joinWelcomeEnabled: true,
-    joinWelcomeMsg: 'Welcome to the server, %player%!',
+    joinWelcomeMsg: 'Welcome to the server, %name%!',
     motdDynastyEnabled: true,
     motdMsgs: ['server motd!'],
     motdInterval: 5,
     chatFormatEnabled: true,
-    chatFormat: '%player%: %message%',
+    chatFormat: '%y%-%m%-%d% %h%:%min%:%s% [%dim%] [%ping%ms] %name%: %msg%',
     sidebarEnabled: true
   },
   helper: {
@@ -151,3 +151,5 @@ export enum UPDATE {
 export const PLUGIN_DESCRIPTION = t`plugin.description`
 
 export const PLUGIN_VERSION = pkg.version.split('.').map(Number)
+
+export const COMMON_KEY = '幸福の王子はツバメを待つ'

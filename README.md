@@ -9,7 +9,7 @@
 
 [🌿 使用手册](USAGE.md) | [📃 更新日志](CHANGELOG.md) | [💡 贡献指南](CONTRIBUTING.md) | [🖍️ 计划列表](TODO.md)
 
-**_📦 插件交流群：633721784_**
+**_📦 [插件交流群：633721784](https://qm.qq.com/q/UnrEFdELm0)_**
 
 </div>
 
@@ -48,8 +48,8 @@ BDS/plugins/sirius/
   - itemsUseOn：自定义物品点击触发指令
   - joinWelcome：玩家进入服务器欢迎信息
   - motdDynasty：服务器动态 Motd 信息循环
-  - chatFormat：自定义玩家聊天信息格式（支持占位符）
-  - sidebar：自定义玩家侧边栏（支持占位符）
+  - chatFormat：自定义玩家聊天信息格式
+  - sidebar：自定义侧边栏
 - 🪜 Helper：帮手系统
   - notice：服务器公告
   - suicide：自杀
@@ -58,7 +58,7 @@ BDS/plugins/sirius/
   - home：玩家个人传送点
   - warp：服务器公共传送点
   - clock：给钟
-  - msgui：玩家私聊 GUI
+  - msgui：玩家私聊菜单
   - here：发送当前位置坐标
   - map：自定义导入地图（待实现）
 - 🥏 Teleport：传送系统
@@ -74,7 +74,7 @@ BDS/plugins/sirius/
   - vanish：自我隐身
   - runas：以指定玩家身份运行指令
   - ban：玩家 / IP 封禁
-  - cloudBlackCheck：[BlackBe](https://blackbe.work/) 云黑检测
+  - cloudBlackCheck：玩家进服 [BlackBe](https://blackbe.work/) 云黑检测
   - skick：强制踢除玩家
   - crash：崩溃玩家客户端
   - stop：停止服务器
@@ -99,11 +99,12 @@ BDS/plugins/sirius/
 - 可扩展：Sirius 提供了一套强大而又完备的 JSON GUI 表单接口，可轻松实现各种复杂表单
 - 坚固化：Sirius 的源码完全由 TypeScript 开发，强大的类型编程为类型安全保驾护航，同时也极大程度上提高开发效率
 - 专业化：不同于其它近乎 90% 的游戏插件/ Addons，我们摒弃将几千行的代码堆在一个渺小的脚本文件（甚至是 JS 文件）成为屎山的行为，并为插件开发引入了包管理、CI/CD、自动化测试、自动化构建等多个工程化开发思想的具体实现
-- 透明化：Sirius 是一个开源项目，任何漏洞、想要的新功能建议均可向其提交 [Issues](https://github.com/biyuehu/sirius/issues)，开发者将不断完善和优化 Sirius，以满足用户需求
+- 国际化：Sirius 支持 英语、日语、繁体中文、简体中文 四国语言
 
 ## 📭 Contributes
 
-欢迎广大有 TypeScript 或 前端开发经验的开发者参与 Sirius 的开发，欢迎任何形式的贡献，包括但不限于代码、文档、Bug 反馈、功能建议等。
+- Sirius 是一个开源项目，任何漏洞、想要的新功能建议均可向其提交 [Issues](https://github.com/biyuehu/sirius/issues)，开发者将不断完善和优化 Sirius，以满足用户需求
+- 欢迎广大有 TypeScript 或 前端开发经验的开发者参与 Sirius 的开发，欢迎任何形式的贡献，包括但不限于代码、文档、Bug 反馈、功能建议等。
 
 ## 📢 Declaration
 

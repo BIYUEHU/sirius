@@ -1,6 +1,7 @@
 import type { Config } from '../../constants/constants'
 import { TargetEntity, betterTell } from '../../utils/betterTell'
 import Component from '../../utils/component'
+import { tp } from '../../utils/t'
 
 export default class Utils extends Component<Config['utils']> {
   public register() {
@@ -41,11 +42,7 @@ export default class Utils extends Component<Config['utils']> {
 
   private chatFormat() {
     mc.listen('onChat', (pl, msg) => {
-      betterTell(
-        // TODO: placeholder api
-        `${this.config.chatFormat.replace('%player%', pl.realName).replace('%message%', msg)}`,
-        TargetEntity.ALL
-      )
+      betterTell(`${tp(this.config.chatFormat, pl).replace('%msg%', msg)}`, TargetEntity.ALL)
       return false
     })
   }

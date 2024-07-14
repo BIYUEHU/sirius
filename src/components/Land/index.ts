@@ -2,6 +2,7 @@ import { type Config, DATA, type Data } from '../../constants/constants'
 import Component from '../../utils/component'
 import { ObjPosToStr, ObjToPos, PosToObj } from '../../utils/position'
 import Gui from '../Gui/index'
+import t, { tp } from '../../utils/t'
 
 type Position = ReturnType<typeof PosToObj>
 
@@ -115,15 +116,15 @@ export default class Land extends Component<Config['land']> {
         const locatedLandLast = this.locatedLandData.get(pl.xuid)
         const [ownerXuid, landName, land] = locatedLandCurrent ?? []
 
-        if (locatedLandCurrent) pl.tell(`当前位于 ${ownerXuid ? this.getPlayerName(ownerXuid) : '???'} 的领地`, 4)
+        if (locatedLandCurrent) pl.tell(t('land.current_location', this.getPlayerName(ownerXuid ?? '???')), 4)
         if ((locatedLandCurrent && locatedLandLast) || (!locatedLandCurrent && !locatedLandLast)) return
         if (locatedLandCurrent && !locatedLandLast && land) {
-          if (land.welcomeMsg) pl.setTitle(land.welcomeMsg, 2)
-          else pl.tell(`你已进入领地 ${landName}`)
+          if (land.welcomeMsg) pl.setTitle(tp(land.welcomeMsg, pl), 2)
+          else pl.tell(t('land.enter', String(landName ?? '???')))
           return this.locatedLandData.set(pl.xuid, land)
         }
         if (!locatedLandCurrent && locatedLandLast) {
-          if (locatedLandLast.leaveMsg) pl.tell(locatedLandLast.leaveMsg)
+          if (locatedLandLast.leaveMsg) pl.tell(tp(locatedLandLast.leaveMsg, pl))
           return this.locatedLandData.delete(pl.xuid)
         }
       }
@@ -141,10 +142,9 @@ export default class Land extends Component<Config['land']> {
     mc.listen('onTakeItem', (pl, entity) => this.catchPlayerEvent(pl, entity.pos))
     mc.listen('onDestroyBlock', (pl, block) => this.catchPlayerEvent(pl, block.pos))
     mc.listen('afterPlaceBlock', (pl, block) => this.catchPlayerEvent(pl, block.pos))
-    // mc.listen('onSetArmor', (pl) => this.catchPlayerEvent(pl, pl.pos))
     mc.listen('onBedEnter', (pl, pos) => this.catchPlayerEvent(pl, pos))
 
-    const landCmd = this.cmd('land', '领地系统', PermType.Any)
+    const landCmd = this.cmd('land', t`cmd.land.description`, PermType.Any)
     landCmd.setEnum('RequestAction', ['tp'])
     landCmd.setEnum('SetAction', ['set'])
     landCmd.setEnum('ResponseAction', ['new', 'buy', 'giveup', 'gui'])
@@ -164,60 +164,56 @@ export default class Land extends Component<Config['land']> {
       const lands = allLands[pl.xuid]
 
       if (result.action === 'tp') {
-        if (!(result.name in lands)) return out.error('没有与目标匹配的领地')
+        if (!(result.name in lands)) return out.error(t`land.error.not_found`)
         pl.teleport(ObjToPos(lands[result.name].start))
-        return out.success(`成功传送到领地 ${result.name}`)
+        return out.success(t('land.teleport.success', result.name))
       }
 
       if (result.action === 'new') {
         if (this.createLandRunning.has(pl.xuid)) {
-          return out.error('当前正在进行领地创建中，如若需要重新创建请先发送 /land giveup')
+          return out.error(t`land.error.creation_in_progress`)
         }
         return Gui.send(pl, {
           type: 'custom',
-          title: '创建领地',
-          elements: [{ type: 'input', title: '领地名称' }],
+          title: t`gui.land.create.title`,
+          elements: [{ type: 'input', title: t`gui.land.create.name` }],
           action: (_, name) => {
-            if (!name) return pl.tell('§c请输入领地名称')
-            if (name in lands) return pl.tell('§c已经有同名的领地')
+            if (!name) return pl.tell(t`land.error.name_required`)
+            if (name in lands) return pl.tell(t`land.error.name_exists`)
             this.createLandRunning.set(pl.xuid, { name })
-            return pl.tell('开始领地创建中，请发送 /land set a 设置领地起始坐标点')
+            return pl.tell(t`land.create.start`)
           }
         })
       }
 
       if (['giveup', 'buy', 'set'].includes(result.action)) {
-        if (!this.createLandRunning.has(pl.xuid)) return out.error('当前没有正在进行的领地创建')
+        if (!this.createLandRunning.has(pl.xuid)) return out.error(t`land.error.no_creation_in_progress`)
 
         const info = this.createLandRunning.get(pl.xuid) as { name: string; a?: Position; b?: Position }
-        /* Buy action part one */
-        if (result.action === 'buy' && (!info.a || !info.b)) return out.error('当前领地创建选点还未设置完成')
+        if (result.action === 'buy' && (!info.a || !info.b)) return out.error(t`land.error.incomplete_selection`)
 
-        /* Other actions parts */
         if (result.action === 'set') {
           const feetPos = PosToObj(pl.feetPos)
           info[result.point as 'a' | 'b'] = feetPos
-          if (result.point === 'a') return out.success(`已设置领地起始坐标点 ${ObjPosToStr(feetPos)}`)
-          if (result.point === 'b') return out.success(`已设置领地结束坐标点 ${ObjPosToStr(feetPos)}`)
+          return out.success(t(`land.set.${result.point}`, ObjPosToStr(feetPos)))
         }
 
         this.createLandRunning.delete(pl.xuid)
-        if (result.action === 'giveup') return out.success('已放弃领地创建')
+        if (result.action === 'giveup') return out.success(t`land.create.giveup`)
 
-        /* Buy action part two */
         for (const list of Object.values(allLands)) {
           for (const item of Object.values(list)) {
             if (!this.hasIntersection([info.a as Position, info.b as Position], [item.start, item.end])) continue
-            return out.error('领地创建失败，选定的领地与已有领地有交叉，请重新创建')
+            return out.error(t`land.error.intersection`)
           }
         }
 
         const blockCount = this.calculateBlockCount([info.a as Position, info.b as Position])
         if (blockCount > this.config.maxBlockCount)
-          return out.error(`领地创建失败，领地大小超过 ${this.config.maxBlockCount} 块`)
+          return out.error(t('land.error.too_large', String(this.config.maxBlockCount)))
 
         const price = blockCount * this.config.buyPrice
-        if (money.get(pl.xuid) < price) return out.error(`领地创建失败，没有足够的金币 ${price}`)
+        if (money.get(pl.xuid) < price) return out.error(t('land.error.insufficient_funds', String(price)))
 
         money.reduce(pl.xuid, price)
         lands[info.name] = {
@@ -227,112 +223,114 @@ export default class Land extends Component<Config['land']> {
           leaveMsg: '',
           welcomeMsg: ''
         }
-        return out.success(`领地 ${info.name} 创建成功，花费 ${price} 金币`)
+        return out.success(t('land.create.success', info.name, String(price)))
       }
 
-      if (Object.keys(lands).length === 0) return out.error('当前没有任何领地')
+      if (Object.keys(lands).length === 0) return out.error(t`land.error.no_lands`)
 
       return Gui.send(pl, {
-        title: '领地管理',
+        title: t`gui.land.manage.title`,
         buttons: Object.entries(lands).map(([text, land]) => ({
           text,
           action: () =>
             Gui.send(pl, {
-              title: `领地：${text} 管理`,
-              content: `起始坐标：${ObjPosToStr(land.start)}\n结束坐标：${ObjPosToStr(land.end)}`,
+              title: t('gui.land.manage.land_title', text),
+              content: t('gui.land.manage.land_info', ObjPosToStr(land.start), ObjPosToStr(land.end)),
               buttons: [
                 {
-                  text: '添加白名单',
+                  text: t`gui.land.manage.add_whitelist`,
                   action: () =>
                     Gui.send(pl, {
                       type: 'custom',
-                      title: `领地：${text} 添加白名单`,
-                      elements: [{ type: 'dropdown', items: '@players', title: '选择玩家' }],
+                      title: t('gui.land.manage.add_whitelist_title', text),
+                      elements: [{ type: 'dropdown', items: '@players', title: t`gui.land.manage.select_player` }],
                       action: (_, target) => {
                         const targetPl = mc.getPlayer(target)
-                        if (!targetPl) return pl.tell('§c目标玩家不在线')
-                        if (targetPl.xuid in lands[text].allowlist) return pl.tell('§c该玩家已经在白名单中')
+                        if (!targetPl) return pl.tell(t`land.error.player_offline`)
+                        if (targetPl.xuid in lands[text].allowlist) return pl.tell(t`land.error.already_whitelisted`)
                         lands[text].allowlist.push(targetPl.xuid)
-                        return pl.tell('玩家已添加到白名单')
+                        return pl.tell(t`land.whitelist.added`)
                       }
                     })
                 },
-                { text: '传送至领地', action: `/land tp "${text}"` },
+                { text: t`gui.land.manage.teleport`, action: `/land tp "${text}"` },
                 {
-                  text: '设置欢迎语',
+                  text: t`gui.land.manage.set_welcome`,
                   action: () =>
                     Gui.send(pl, {
                       type: 'custom',
-                      title: `领地：${text} 设置欢迎语`,
-                      elements: [{ type: 'input', title: '欢迎语', default: land.welcomeMsg }],
+                      title: t('gui.land.manage.set_welcome_title', text),
+                      elements: [
+                        { type: 'input', title: t`gui.land.manage.welcome_message`, default: land.welcomeMsg }
+                      ],
                       action: (_, msg) => {
                         lands[text].welcomeMsg = msg
-                        return pl.tell('欢迎语已设置')
+                        return pl.tell(t`land.welcome.set`)
                       }
                     })
                 },
                 {
-                  text: '设置离开语',
+                  text: t`gui.land.manage.set_leave`,
                   action: (pl, msg) =>
                     Gui.send(pl, {
                       type: 'custom',
-                      title: `领地：${text} 设置离开语`,
-                      elements: [{ type: 'input', title: '离开语', default: land.leaveMsg }],
+                      title: t('gui.land.manage.set_leave_title', text),
+                      elements: [{ type: 'input', title: t`gui.land.manage.leave_message`, default: land.leaveMsg }],
                       action: (_, msg) => {
                         lands[text].leaveMsg = msg
-                        return pl.tell('离开语已设置')
+                        return pl.tell(t`land.leave.set`)
                       }
                     })
                 },
                 {
-                  text: '重命名领地',
+                  text: t`gui.land.manage.rename`,
                   action: () =>
                     Gui.send(pl, {
                       type: 'custom',
-                      title: `领地：${text} 重命名`,
-                      elements: [{ type: 'input', title: '新的名称' }],
+                      title: t('gui.land.manage.rename_title', text),
+                      elements: [{ type: 'input', title: t`gui.land.manage.new_name` }],
                       action: (_, name) => {
-                        if (!name) return pl.tell('§c请输入新的名称')
-                        if (name in lands) return pl.tell('§c已经有同名的领地')
+                        if (!name) return pl.tell(t`land.error.name_required`)
+                        if (name in lands) return pl.tell(t`land.error.name_exists`)
 
                         lands[name] = lands[text]
                         delete lands[text]
-                        return pl.tell(`领地已重命名为 ${name}`)
+                        return pl.tell(t('land.rename.success', name))
                       }
                     })
                 },
                 {
-                  text: '转让领地',
+                  text: t`gui.land.manage.transfer`,
                   action: () =>
                     Gui.send(pl, {
                       type: 'custom',
-                      title: `领地：${text} 转让`,
-                      elements: [{ type: 'dropdown', items: '@players', title: '转让给' }],
+                      title: t('gui.land.manage.transfer_title', text),
+                      elements: [{ type: 'dropdown', items: '@players', title: t`gui.land.manage.transfer_to` }],
                       action: (_, target) => {
                         const targetPl = mc.getPlayer(target)
-                        if (!targetPl) return pl.tell('§c目标玩家不在线')
-                        if (targetPl.xuid === pl.xuid) return pl.tell('§c不能转让给自己')
+                        if (!targetPl) return pl.tell(t`land.error.player_offline`)
+                        if (targetPl.xuid === pl.xuid) return pl.tell(t`land.error.self_transfer`)
 
-                        allLands[targetPl.xuid][`${text} 来自：${pl.name}`] = lands[text]
+                        allLands[targetPl.xuid][t('land.transfer.new_name', text, pl.name)] = lands[text]
                         delete lands[text]
-                        targetPl.tell(`玩家 ${pl.realName} 将领地 ${text} 已转让给你`)
-                        return pl.tell(`领地已转让给玩家 ${targetPl.realName}`)
+                        targetPl.tell(t('land.transfer.received', pl.realName, text))
+                        return pl.tell(t('land.transfer.success', text, targetPl.realName))
                       }
                     })
                 },
                 {
-                  text: '删除领地',
+                  text: t`gui.land.manage.delete`,
                   action: () => {
                     const price = this.calculateBlockCount([land.start, land.end]) * this.config.destPrice
 
                     Gui.sendModal(
                       pl,
-                      `领地：${text} 删除`,
-                      `删除后将得将返还金币 ${price}，确定要删除该领地吗？`,
+                      t('gui.land.manage.delete_title', text),
+                      t('gui.land.manage.delete_confirm', String(price)),
                       () => {
                         delete lands[text]
                         money.add(pl.xuid, price)
-                        return pl.tell(`领地已删除，返还 ${price} 金币`)
+                        return pl.tell(t('land.delete.success', String(price)))
                       }
                     )
                   }

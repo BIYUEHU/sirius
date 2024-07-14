@@ -1,4 +1,6 @@
+import { COMMON_KEY } from '../constants/constants'
 import TOML from '../modules/tomlParser'
+import asCrypto from './asCrypto'
 
 // biome-ignore lint:
 export default class AutoConfigFile<T extends Record<string, any> = Record<string, any>> {
@@ -41,14 +43,21 @@ export default class AutoConfigFile<T extends Record<string, any> = Record<strin
 
   public readonly defaults?: T
 
-  public constructor(filePath: string, defaults?: T) {
+  public readonly decode: boolean
+
+  public constructor(filePath: string, defaults?: T, decode?: boolean) {
     this.filePath = filePath
     this.defaults = defaults
+    this.decode = !!decode
+    const content = file.readFrom(this.filePath) ?? ''
     this.cache = Object.assign(
       this.defaults ?? {},
-      file.exists(this.filePath) ? TOML.parse(file.readFrom(this.filePath) ?? '') : {}
+      file.exists(this.filePath)
+        ? TOML.parse(asCrypto.isEncrypted(content) ? asCrypto.decrypt(content, COMMON_KEY) : content)
+        : {}
     ) as T
-    File.writeTo(this.filePath, TOML.stringify(this.cache))
+    const writeContent = TOML.stringify(this.cache)
+    File.writeTo(this.filePath, this.decode ? asCrypto.encrypt(writeContent, COMMON_KEY) : writeContent)
   }
 
   public get<K extends keyof T>(key: K): T[K] {
@@ -58,21 +67,27 @@ export default class AutoConfigFile<T extends Record<string, any> = Record<strin
 
   public set<K extends keyof T>(key: K, value: T[K]) {
     this.cache[key] = value
-    return File.writeTo(this.filePath, TOML.stringify(this.cache))
+    const writeContent = TOML.stringify(this.cache)
+    return File.writeTo(this.filePath, this.decode ? asCrypto.encrypt(writeContent, COMMON_KEY) : writeContent)
   }
 
   public delete<K extends keyof T>(key: K) {
     delete this.cache[key]
-    return File.writeTo(this.filePath, TOML.stringify(this.cache))
+    const writeContent = TOML.stringify(this.cache)
+    return File.writeTo(this.filePath, this.decode ? asCrypto.encrypt(writeContent, COMMON_KEY) : writeContent)
   }
 
   public reload() {
-    this.cache = TOML.parse(file.readFrom(this.filePath) ?? '') as T
+    const readContent = file.readFrom(this.filePath) ?? ''
+    this.cache = TOML.parse(
+      asCrypto.isEncrypted(readContent) ? asCrypto.decrypt(readContent, COMMON_KEY) : readContent
+    ) as T
   }
 
   public write(data: T) {
     this.cache = data
-    return File.writeTo(this.filePath, TOML.stringify(this.cache))
+    const writeContent = TOML.stringify(this.cache)
+    return File.writeTo(this.filePath, this.decode ? asCrypto.encrypt(writeContent, COMMON_KEY) : writeContent)
   }
 
   public read() {

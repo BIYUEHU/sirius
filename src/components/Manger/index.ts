@@ -313,7 +313,7 @@ export default class Manger extends Component<Config['manger']> {
       const device = target.getDevice()
       out.success(
         t(
-          'cmd.info.msg',
+          'cmd.info.msg.success',
           target.realName,
           target.xuid,
           target.uuid,
