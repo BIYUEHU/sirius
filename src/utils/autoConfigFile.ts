@@ -1,6 +1,7 @@
-import { COMMON_KEY } from '../constants/constants'
 import TOML from '../modules/tomlParser'
 import asCrypto from './asCrypto'
+
+const COMMON_KEY = '幸福の王子はツバメを待つ'
 
 // biome-ignore lint:
 export default class AutoConfigFile<T extends Record<string, any> = Record<string, any>> {

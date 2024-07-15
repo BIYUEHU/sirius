@@ -11,7 +11,7 @@ class AsCrypto {
       const encryptedCharCode = charCode ^ keyChar.charCodeAt(0)
       result += String.fromCharCode(encryptedCharCode)
     }
-    return this.KEY_PREFIX + Buffer.from(result).toString('base64') + this.KEY_SUFFIX
+    return `${this.KEY_PREFIX}${data.toBase64(result)}${this.KEY_SUFFIX}`
   }
 
   public decrypt(encryptedText: string, key: string): string {
@@ -20,7 +20,7 @@ class AsCrypto {
     }
     const uniqueKey = this.getUniqueKey(key)
     const base64 = encryptedText.slice(this.KEY_PREFIX.length, -this.KEY_SUFFIX.length)
-    const encrypted = Buffer.from(base64, 'base64').toString()
+    const encrypted = data.fromBase64(base64, false).toString()
     let result = ''
     for (let i = 0; i < encrypted.length; i++) {
       const charCode = encrypted.charCodeAt(i)

@@ -1,5 +1,5 @@
+// import './constants/template'
 import './constants/constants'
-import './constants/template'
 import pkg from '../package.json'
 import Gui from './components/Gui/index'
 import Helper from './components/Helper/index'
@@ -8,10 +8,10 @@ import Manger from './components/Manger/index'
 import Money from './components/Money/index'
 import Teleport from './components/Teleport/index'
 import Utils from './components/Utils/index'
-import { CONFIG, DATA, PLUGIN_DESCRIPTION, PLUGIN_NAME, PLUGIN_VERSION, UPDATE } from './constants/constants'
+import { CONFIG, DATA, PLUGIN_NAME, PLUGIN_VERSION, UPDATE } from './constants/constants'
 import Component from './utils/component'
 import Loader from './utils/loader'
-import t from './utils/t'
+import t, { PLUGIN_DESCRIPTION } from './utils/t'
 
 class SiriusApi extends Component<object> {
   public register() {

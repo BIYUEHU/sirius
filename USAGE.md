@@ -36,6 +36,10 @@ chatFormatEnabled = true
 chatFormat = "%y%-%m%-%d% %h%:%min%:%s% [%dim%] [%ping%ms] %name%: %msg%"
 # 是否开启自定义侧边栏
 sidebarEnabled = true
+# 自定义侧边栏标题
+sidebarTitle = "Server Info"
+# 自定义侧边栏内容（从 0 开始依次递增）
+sidebarList = [ "speed: %speed%", "Ping: %ping%ms", "Time: %m%-%d% %h%:%min%" ]
 # 自定义物品点击触发指令
 [utils.itemsUseOn]
 # "物品 ID" = "指令（不加 / ）"

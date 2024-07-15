@@ -22,7 +22,7 @@ export default class Manger extends Component<Config['manger']> {
     if (this.config.safeCmdEnabled) btnList.push({ id: 'safe', text: t`gui.manger.btn.safe`, action: '/safe' })
     if (this.config.vanishCmdEnabled) btnList.push({ id: 'vanish', text: t`gui.manger.btn.vanish`, action: '/vanish' })
     if (this.config.skickCmdEnabled)
-      btnList.push({ id: 'skick', text: t`gui.manger.btn.skick`, action: '`/manger skick' })
+      btnList.push({ id: 'skick', text: t`gui.manger.btn.skick`, action: '/manger skick' })
     if (this.config.crashCmdEnabled)
       btnList.push({ id: 'crash', text: t`gui.manger.btn.crash`, action: '/manger crash' })
     if (this.config.infoCmdEnabled) btnList.push({ id: 'info', text: t`gui.manger.btn.info`, action: '/manger info' })
@@ -80,9 +80,6 @@ export default class Manger extends Component<Config['manger']> {
                 `ban ${banip ? 'banip' : 'ban'} "${player}" ${Number.isNaN(Number(time)) ? Number(time) : 0}${reason ? ` "${reason}"` : ''}`
               )
           })
-          break
-        case 'banls':
-          pl.runcmd('/ban ls')
           break
         case 'unban':
           Gui.send(pl, {
@@ -356,7 +353,7 @@ export default class Manger extends Component<Config['manger']> {
     })
 
     mc.listen('onPreJoin', (pl) => {
-      if (DATA.get('safe').status && !pl.isOP()) pl.disconnect('info.safe_mode')
+      if (DATA.get('safe').status && !pl.isOP()) pl.disconnect(t`info.safe_mode`)
     })
   }
 }

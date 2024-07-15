@@ -17,7 +17,7 @@
     },
     {
       "text": "经济系统",
-      "action": "/money gui"
+      "action": "`money"
     },
     {
       "text": "领地系统",

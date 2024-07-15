@@ -21,6 +21,7 @@ export default class Helper extends Component<Config['helper']> {
   }
 
   public register() {
+    if (this.config.nbtCommandEnabled) this.nbt()
     if (this.config.backCmdEnabled) this.back()
     if (this.config.suicideCmdEnabled) this.suicide()
     if (this.config.msguiCmdEnabled) this.msgui()
@@ -30,6 +31,22 @@ export default class Helper extends Component<Config['helper']> {
   }
 
   private readonly playerDieCache: Map<string, Player['pos']> = new Map()
+
+  private nbt() {
+    const nbtCmd = this.cmd('nbt', t`cmd.nbt.description`, PermType.Any)
+    nbtCmd.setEnum('Type', ['block', 'item', 'entity', 'self'])
+    nbtCmd.mandatory('type', ParamType.Enum, 'Type', 1)
+    nbtCmd.overload(['Type'])
+    nbtCmd.overload([])
+    nbtCmd.setCallback((_, { player: pl }, out, result) => {
+      if (!pl) return
+      const send = (nbt: NbtCompound | undefined) => pl.tell(nbt ? nbt.toString() : 'null')
+      if (result.type === 'block') return send(pl.getBlockFromViewVector()?.getNbt())
+      if (result.type === 'item') return send(pl.getHand().getNbt())
+      if (result.type === 'entity') return send(pl.getEntityFromViewVector()?.getNbt())
+      return send(pl.getNbt())
+    })
+  }
 
   private sendNotice(pl: Player) {
     const notice = this.loadNotice()

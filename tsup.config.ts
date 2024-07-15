@@ -23,7 +23,11 @@ const MANIFEST = {
 export default defineConfig(({ define }) => {
   const isRelease = define?.release !== undefined
   const DIR = isRelease ? resolve('dist') : PLUGIN_DIR
-  if (!isRelease) sh.cp('-R', `${PLUGIN_STATIC_DIR}/*`, `${DIR}*`)
+  if (isRelease) {
+    sh.rm('-rf', 'dist')
+    sh.mkdir('-p', 'dist')
+    sh.cp('-R', `${PLUGIN_STATIC_DIR}/*`, `${DIR}`)
+  } else sh.cp('-R', `${PLUGIN_STATIC_DIR}/*`, `${DIR}*`)
   writeFileSync(resolve(DIR, 'manifest.json'), JSON.stringify(MANIFEST, null, 2))
   return {
     entryPoints: [`./src/${PLUGIN_NAME}.ts`],

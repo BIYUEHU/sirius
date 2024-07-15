@@ -9,6 +9,7 @@ export default class Utils extends Component<Config['utils']> {
     if (this.config.joinWelcomeEnabled) this.joinWelcome()
     if (this.config.motdDynastyEnabled && this.config.motdMsgs.length > 0) this.motdDynasty()
     if (this.config.chatFormatEnabled) this.chatFormat()
+    if (this.config.sidebarEnabled) this.sidebar()
   }
 
   private playerItemsUsing: Set<string> = new Set()
@@ -24,7 +25,7 @@ export default class Utils extends Component<Config['utils']> {
   }
 
   private joinWelcome() {
-    mc.listen('onJoin', (pl) => pl.tell(this.config.joinWelcomeMsg.replace('%player%', pl.realName)))
+    mc.listen('onJoin', (pl) => pl.tell(tp(this.config.joinWelcomeMsg, pl)))
   }
 
   private motdDynasty() {
@@ -45,5 +46,18 @@ export default class Utils extends Component<Config['utils']> {
       betterTell(`${tp(this.config.chatFormat, pl).replace('%msg%', msg)}`, TargetEntity.ALL)
       return false
     })
+  }
+
+  private sidebar() {
+    setInterval(() => {
+      for (const pl of mc.getOnlinePlayers()) {
+        const list: Record<string, number> = {}
+        for (let i = 0; i < this.config.sidebarList.length; i += 1) {
+          list[tp(this.config.sidebarList[i], pl)] = i
+        }
+        pl.removeSidebar()
+        pl.setSidebar(this.config.sidebarTitle, list, 0)
+      }
+    }, 1000)
   }
 }

@@ -9,13 +9,47 @@ export default class Money extends Component<Config['money']> {
       logger.error(t`info.money_not_found`)
       return
     }
+    this.moneys()
     if (this.config.hunterEnabled) this.hunter()
     if (this.config.shopCmdEnabled) this.shopCmd()
   }
 
+  private moneys() {
+    const moneysCmd = this.cmd('moneys', t`cmd.moneys.description`, PermType.Any)
+    moneysCmd.setEnum('Action', ['pay'])
+    moneysCmd.mandatory('action', ParamType.Enum, 'Action', 1)
+    moneysCmd.overload(['Action'])
+    moneysCmd.setCallback((_, { player: pl }, out, result) => {
+      if (!pl) return
+      if (result.action === 'pay') {
+        return Gui.send(pl, {
+          type: 'custom',
+          title: t`gui.money.pay.title`,
+          elements: [
+            { type: 'dropdown', title: t`gui.money.pay.dropdown`, items: '@players' },
+            { type: 'input', title: t`gui.money.pay.input` }
+          ],
+          action: (_, target, input) => {
+            const targetPl = mc.getPlayer(target)
+            if (!targetPl) return out.error(t`gui.money.pay.error.target_not_found`)
+            const price = Number.parseInt(input)
+            if (!price) return out.error(t`gui.money.pay.error.empty`)
+            if (Number.isNaN(price)) return out.error(t`gui.money.pay.error.not_number`)
+            if (Number(price) <= 0) return out.error(t`gui.money.pay.error.not_positive`)
+            if (money.get(pl.xuid) < price) return out.error(t`gui.money.pay.error.not_enough_money`)
+            money.reduce(pl.xuid, price)
+            money.add(targetPl.xuid, price)
+            out.success(t('gui.money.pay.success', targetPl.realName, String(price)))
+            targetPl.tell(t('gui.money.pay.target_received', pl.realName, String(price)))
+          }
+        })
+      }
+    })
+  }
+
   private hunter() {
     mc.listen('onMobDie', (mob, source) => {
-      if (!source.isPlayer()) return
+      if (!source || !source.isPlayer()) return
       const pl = mc.getPlayer(source.name)
       if (!pl) return
       const list = CONFIG.get('hunter')
@@ -50,7 +84,8 @@ export default class Money extends Component<Config['money']> {
                   'gui.shop.item_list.item',
                   type === 'buy' ? 'gui.shop.item_list.buy' : 'gui.shop.item_list.sell',
                   text,
-                  String(count)
+                  String(count ?? 1),
+                  String(price)
                 ),
                 action: () => {
                   const item = mc.newItem(itemId, count ?? 1)
@@ -69,7 +104,7 @@ export default class Money extends Component<Config['money']> {
                   }
 
                   money.add(pl.xuid, price)
-                  return pl.tell(t('cmd.shop.msg.sell', text, String(count), String(price)))
+                  return pl.tell(t('cmd.shop.msg.sell', text, String(count ?? 1), String(price)))
                 }
               }))
             })

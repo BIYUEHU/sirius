@@ -1,0 +1,26 @@
+{
+  "$schema": "../../schema/gui.json",
+  "title": "经济系统",
+  "buttons": [
+    {
+      "text": "转账",
+      "action": "/moneys pay"
+    },
+    {
+      "text": "账单",
+      "action": "/money hist"
+    },
+    {
+      "text": "查询",
+      "action": "/money query"
+    },
+    {
+      "text": "商店",
+      "action": "/shop"
+    },
+    {
+      "text": "返回",
+      "action": "`index"
+    }
+  ]
+}

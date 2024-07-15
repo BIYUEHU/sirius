@@ -33,12 +33,13 @@ BDS/plugins/sirius/
   │  ├── data.json
   │  ├── notice.txt
   ├── gui
+  ├── locales
   ├── Sirius.js
   ├── manifest.json
   └── config.json
 ```
 
-> `data` 与 `gui` 文件夹将会在服务器启动时由 Sirius 自动生成，无需手动创建。
+> `data` 文件夹将会在服务器启动时由 Sirius 自动生成，无需手动创建。
 
 ## 🧩 Features
 

@@ -159,7 +159,7 @@ export default class Teleport extends Component<Config['teleport']> {
 
       // As receiver
       if (['ac', 'de'].includes(result.action)) {
-        if (!this.tpaTargetsRunning.has(pl.xuid)) return out.error(t`cmd.tpa.msg.error.no_request`)
+        if (!this.tpaTargetsRunning.has(pl.xuid)) return pl.tell(t`cmd.tpa.msg.error.no_request`)
         const [senderXuid, callback] = this.tpaTargetsRunning.get(pl.xuid) as [string, () => void]
         const sender = mc.getPlayer(senderXuid)
         if (result.action === 'ac') {
@@ -178,7 +178,7 @@ export default class Teleport extends Component<Config['teleport']> {
           'tpasEnableList',
           enableList.filter((x) => x !== pl.xuid)
         )
-        return out.error(t`cmd.tpa.msg.unblocked`)
+        return pl.tell(t`cmd.tpa.msg.unblocked`)
       }
 
       DATA.set('tpasEnableList', [...enableList, pl.xuid])

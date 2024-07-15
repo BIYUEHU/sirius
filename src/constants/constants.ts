@@ -1,4 +1,3 @@
-import t from '../utils/t'
 import pkg from '../../package.json'
 import AutoConfigFile from '../utils/autoConfigFile'
 
@@ -34,10 +33,13 @@ const CONFIG_DEFAULT = {
     motdInterval: 5,
     chatFormatEnabled: true,
     chatFormat: '%y%-%m%-%d% %h%:%min%:%s% [%dim%] [%ping%ms] %name%: %msg%',
-    sidebarEnabled: true
+    sidebarEnabled: true,
+    sidebarTitle: 'Server Info',
+    sidebarList: ['speed: %speed%', 'Ping: %ping%ms', 'Time: %m%-%d% %h%:%min%']
   },
   helper: {
     enabled: true,
+    nbtCommandEnabled: true,
     noticeCmdEnabled: true,
     suicideCmdEnabled: true,
     backCmdEnabled: true,
@@ -141,15 +143,11 @@ const DATA_DEFAULT = {
 
 export type Data = typeof DATA_DEFAULT
 
-export const DATA = new AutoConfigFile(DATA_FILE, DATA_DEFAULT)
+export const DATA = new AutoConfigFile(DATA_FILE, DATA_DEFAULT, CONFIG.get('global').decode)
 
 export enum UPDATE {
   REPO = 'https://github.com/biyuehu/sirius',
   META = 'https://hotaru.icu/api/agent/?url=https://raw.githubusercontent.com/biyuehu/sirius/master/package.json'
 }
 
-export const PLUGIN_DESCRIPTION = t`plugin.description`
-
-export const PLUGIN_VERSION = pkg.version.split('.').map(Number)
-
-export const COMMON_KEY = '幸福の王子はツバメを待つ'
+export const PLUGIN_VERSION = pkg.version.split('-')[0].split('.').map(Number)

@@ -241,13 +241,13 @@ export default class Gui extends Component<Config['gui']> {
       const dir = `${path}/${filename}`
       if (File.checkIsDir(dir)) {
         Gui.getAll(dir)
-        return
+        continue
       }
 
       const file: GuiData | null = data.parseJson(File.readFrom(dir) ?? '')
       if (!file) {
         logger.error(`Gui file json parse error at ${dir}`)
-        return
+        continue
       }
 
       if (
@@ -258,15 +258,15 @@ export default class Gui extends Component<Config['gui']> {
         (file.type === 'modal' && typeof file.confirmAction !== 'string')
       ) {
         logger.error(`Gui file format invalid at ${dir}`)
-        return
+        continue
       }
 
       if (file.type === 'simple' || !file.type) {
-        if (!file.buttons) return
+        if (!file.buttons) continue
         for (const btn of file.buttons) {
           if (btn.action && typeof btn.action === 'string' && btn.action.charAt(0) === '`') {
             const guiName = btn.action.slice(1)
-            if (File.exists(`${GUI_PATH}/${guiName}.json`)) return
+            if (File.exists(`${GUI_PATH}/${guiName}.json`)) continue
             logger.error(`cannot find action "${btn.action}" gui file at ${dir}`)
           }
         }
