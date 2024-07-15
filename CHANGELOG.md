@@ -11,6 +11,7 @@
 
 * component plugin, import json ([aa40e9c](https://github.com/biyuehu/sirius/commit/aa40e9ce810c89382539b75357fe09551b5dcb77))
 * crypto and locale full ([3baf45a](https://github.com/biyuehu/sirius/commit/3baf45a84fb4e9a8773a466cce5e45fb6e5a1310))
+* custom player sidebar ([2612c51](https://github.com/biyuehu/sirius/commit/2612c511598ce193f7b5f79c5ba285ed3a0a14e8))
 * gui, helper, teleport ([59c6543](https://github.com/biyuehu/sirius/commit/59c6543e90c3f563be0960caf841d810c0930aa4))
 * hunter, gui shop, land ([086dccb](https://github.com/biyuehu/sirius/commit/086dccb94a8ac25cdb0a0a5f648daaabb8ab0603))
 * land systems ([fa957dc](https://github.com/biyuehu/sirius/commit/fa957dc6a3c3cddcbfa6a41f64582ff21c8124ba))

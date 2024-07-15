@@ -353,4 +353,300 @@ type = "sell"
 
 ## 自定义菜单（JSON GUI）
 
+所有的用户自定义菜单文件均位于 `BDS/plugins/Sirius/gui/` 目录下，文件名格式为 `*.json`，支持子文件夹，其中每个文件夹下的 `index.json` 文件将作为菜单的入口。以下是一个自定义菜单文件的基础骨架：
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/biyuehu/sirius/master/schema/gui.json",
+  "type": "here is type of the menu",
+  "title": "Here is title of the menu"
+  /* other properties... */
+}
+```
+
+- `$schema`：JSON 校验文件，非必须。如若你在 VSCode 等编辑器中编写自定义菜单，添加此属性可以获得更好的代码提示和校验
+- `type`：菜单类型，支持三种值：`simple`、`modal`、`custom`，选填，默认为 `simple`
+- `title`：菜单标题，必填
+
+> 上述 `$schema` 中的文件地址为直接引用 GitHub 资源，考虑到部分国内用户面临长城防火墙等问题，Sirius 在此提供了一个代理地址供使用：
+> `https://hotaru.icu/api/agent/?url=https://raw.githubusercontent.com/biyuehu/sirius/master/schema/gui.json`
+
+### Simple 菜单
+
+Simple 菜单允许定义菜单描述以及若干个按钮：
+
+```json
+{
+  "title": "§l§d菜单",
+  "content": "菜单可通过钟表点地或 /menu 或 /cd 指令打开",
+  "buttons": [
+    {
+      "text": "助手系统",
+      "action": "`helper"
+    },
+    {
+      "text": "管理系统",
+      "action": "/manger",
+      "onlyOp": true
+    },
+    {
+      "text": "退出",
+      "action": ""
+    }
+  ]
+}
+```
+
+- `content`：菜单描述，选填
+- `buttons`：按钮列表，必填，数组类型，每个元素代表一个按钮
+  - `text`：按钮文字，必填
+  - `action`：按钮动作，必填，关于 `action` 的详细说明请参考下文
+  - `onlyOp`：仅管理员可用，选填，布尔类型，默认为 `false`
+
+### Modal 菜单
+
+Modal 菜单允许定义一个询问框，会有确认与取消两个按钮：
+
+```json
+{
+  "type": "modal",
+  "title": "新手向导",
+  "advanced": true,
+  "content": "欢迎，请仔细阅读群内文件\n常用指令：\n获取钟表/clock\n查看公告/notice\n开公告传送点/warp gui\n\n更多内容参考《服务器管理制度条例◆第二章》\n大部分功能均可在菜单内找到",
+  "confirmText": "我已阅读完毕",
+  "confirmAction": "/me 已阅读完毕",
+  "cancelText": "我再看看",
+  "cancelAction": ""
+}
+```
+
+- `advanced`：是否启用高级模式，选填，布尔类型，默认为 `false`。默认情况下使用原版自带的 Modal 表单，开启后将使用基于 Simple 菜单封装的 Modal 菜单
+- `confirmText`：确认按钮文字，选填，默认为 `确认`
+- `confirmAction`：确认按钮动作，必填，关于 `action` 的详细说明请参考下文
+- `cancelText`：取消按钮文字，选填，默认为 `取消`
+- `cancelAction`：取消按钮动作，选填，关于 `action` 的详细说明请参考下文
+
+### Custom 菜单
+
+Custom 菜单允许定义各种复制元素的提交表单：
+
+```json
+{
+  "type": "custom",
+  "onlyOp": true,
+  "title": "跨服传送",
+  "elements": [
+    {
+      "type": "dropdown",
+      "items": "@players",
+      "title": "目标玩家"
+    },
+    {
+      "type": "input",
+      "title": "目标服务器 IP 地址"
+    },
+    {
+      "type": "input",
+      "title": "目标服务器端口",
+      "default": "19132",
+      "placeholder": "选填，默认 19132"
+    }
+  ],
+  "action": "/transfers \"{0}\" {1} {2}"
+}
+```
+
+- `elements`：表单元素列表，必填，数组类型，每个元素代表一个表单元素
+- `action`：表单提交动作，必填，关于 `action` 的详细说明请参考下文
+
+对于 `elements` 支持以下元素类型：
+
+```typescript
+type MagicExpr = string;
+
+type elements = Array<
+  | { type: "label"; text: string | MagicExpr }
+  | {
+      type: "input";
+      title: string;
+      placeholder?: string | MagicExpr;
+      default?: string | MagicExpr;
+    }
+  | { type: "switch"; title: string; default?: boolean | MagicExpr }
+  | {
+      type: "dropdown";
+      title: string;
+      items: Array<string> | MagicExpr;
+      default?: number | MagicExpr;
+    }
+  | {
+      type: "slider";
+      title: string;
+      min: number | MagicExpr;
+      max: number | MagicExpr;
+      step?: number | MagicExpr;
+      default?: number | MagicExpr;
+    }
+  | {
+      type: "stepSlider";
+      title: string;
+      items: Array<string> | MagicExpr;
+      default?: number | MagicExpr;
+    }
+>;
+```
+
+#### label 标签
+
+1. `text`：标签文字，必填
+
+#### input 输入框
+
+- `title`：输入框标题，必填
+- `placeholder`：输入框提示文字，选填
+- `default`：默认值，选填
+
+#### switch 开关
+
+- `title`：开关标题，必填
+- `default`：默认值，选填，布尔类型
+
+#### dropdown 下拉框
+
+- `title`：下拉框标题，必填
+- `items`：选项列表，必填，数组类型，每个元素代表一个选项
+- `default`：默认值，选填，数字类型，从 0 开始
+
+#### slider 滑块
+
+- `title`：滑块标题，必填
+- `min`：最小值，必填，数字类型
+- `max`：最大值，必填，数字类型
+- `step`：步长，选填，数字类型，默认为 1
+- `default`：默认值，选填，数字类型，从 `min` 开始
+
+#### stepSlider 步进滑块
+
+- `title`：步进滑块标题，必填
+- `items`：选项列表，必填，数组类型，每个元素代表一个选项
+- `default`：默认值，选填，数字类型，从 0 开始
+
+### action 动作
+
+`action` 在 Sirius 内部中将其命名为 魔法表达式 `MagicExpr`，本质是一个具有特定作用的字符串，魔法表达式可谓整个 JSON GUI 的精华所在，尤其是通过其与 Custom 菜单的结合，可以轻松通过编写 JSON 实现各种复杂的交互功能和文字内容动态渲染，这是其它所有插件所不及的。
+
+以下是支持解析魔法表达式的属性：
+
+- Simple
+  - `buttons`
+    - `action`：按钮动作
+- Modal
+  - `confirmAction`：确认按钮动作
+  - `cancelAction`：取消按钮动作
+- Custom
+  - `elements`
+    - label
+      - `text`：标签文字
+    - input
+      - `placeholder`：输入框提示文字
+      - `default`：默认值
+    - switch
+      - `default`：默认值
+    - dropdown
+      - `items`：选项列表
+      - `default`：默认值
+    - slider
+      - `min`：最小值
+      - `max`：最大值
+      - `step`：步长
+      - `default`：默认值
+    - stepSlider
+      - `items`：选项列表
+      - `default`：默认值
+  - `action`：表单提交动作
+
+魔法表达式主要通过 `前缀操作符`（即表达式的第一个字符） 进行识别操作类型，支持以下前缀操作符：
+
+- `/`：以触发动作的玩家身份执行一条指令，如：`/say 你好`，返回指令执行是否成功
+- `~`：以控制台身份执行一条命令，如：`~kill @a`，返回命令执行是否成功
+- `#`：向触发动作的玩家发送一条聊天信息，如：`#你好`，返回消息发送是否成功
+- `@`：语法糖
+  - `@players`，返回一个含有当前所有在线玩家的名字的字符串数组，主要用于 Custom 菜单中的 dropdown、stepSlider 元素的 `items` 属性
+- `$`：执行 JavaScript 代码，该功能具有一定风险，请慎用，如：`$mc.getOnlinePlayers().map((p) => p.realName)`，等价于 `@players`
+- _\`_：打开指定 GUI 文件，不带文件后缀，以 `BDS/plugins/Sirius/gui/` 目录为基准，如：_\`helper_，等价于 `~gui open helper`，返回打开 GUI 是否成功
+
+若前缀不为以上任何一个，则将作为普通字符串直接返回
+
 ## 数据迁移
+
+Sirius 是 LeviLamina 生态的新生力量，诚然，从旧的生态迁移到新的生态是一件令人苦恼而又厌烦的事，因为大家都习惯安于现状。在此，Sirius 以为你提供了一些常见的其它插件的数据迁移方法。
+
+以下是一个 Sirius 数据文件的基础骨架：
+
+```json
+{
+  "xuids": {},
+  "homes": {},
+  "warps": {},
+  "lands": {},
+  "noticed": {
+    "hash": 0
+  },
+  "denylist": {},
+  "bans": {},
+  "safe": {
+    "status": false
+  }
+}
+```
+
+### 转换 BedrockX 的 Home、Warp 数据
+
+Sirius 制作初衷即为提供一个可直接继承于 BedrockX 预装插件数据的插件。
+
+- 使用 `[LLTpaReader](https://github.com/ShrBox/LLTpaReader)` 插件处理你的 BedrockX 数据，具体步骤请参考该项目详情页
+- 一切就绪后文件将会输出在 `plugins/LLTpaReader/output.json`，其格式大致为如下所示：
+
+```json
+{
+  "homes": {
+    /* ... */
+  },
+  "warps": {
+    /* ... */
+  }
+}
+```
+
+- 将其直接合并到上述基础骨架中。
+
+### 转换 ILand 插件数据
+
+- 在 ILand 插件的数据文件夹中你将找到 `relationship.json` 和 `data.json`，将其复制到任意空文件夹中即可
+- 使用 Sirius 编写的一个 Node.js 脚本 [`scripts/i-convert.ts`](https://github.com/BIYUEHU/sirius/blob/master/scripts/i-convert.ts)，将其直接下载到你的电脑上，并放置于上一步骤中的同一个文件夹中，现在目录结构应是如下所示：
+
+```text
+./
+ ├── i-convert.ts
+ ├── relationship.json
+ └── data.json
+```
+
+- 安装 Node.js 环境（建议版本 >= 17.0.0）
+- 在该文件夹中运行 `npx tsx i-convert` 指令，执行完毕后将在该文件夹中生成 `output.json` 文件，其格式大致为如下所示：
+
+```json
+{
+  "lands": {
+    /* ... */
+  }
+}
+```
+
+- 同理，将其直接合并到上述基础骨架中。
+
+### 载入转换数据
+
+- 将合并完毕的基础骨架转换成 TOML 格式，推荐使用 [TOML INFO](https://calc.free-for-dev.com/toml/zh/json-to-toml) 工具进行在线转换
+- 将转换后的 TOML 数据放置于 `BDS/plugins/Sirius/data/data.toml`
+- 重启服务器或在游戏内输入 `/sirius reload`
