@@ -28,22 +28,50 @@ function t(key: string | TemplateStringsArray, ...args: string[]) {
   return i18n.locale(input) ?? input
 }
 
+// biome-ignore lint:
+let PAPI: any
+
 export function tp(key: string, pl: Player, ...args: string[]) {
-  return PAPI.translateString(t(key, ...args), pl)
+  return PAPI ? PAPI.translateString(t(key, ...args), pl) : t(key, ...args)
 }
 
-t`comment: 傻逼 tsup，我特么都说了不是 node.js 还特么搁这处理 require()，于是只好重命名了`
-const r = require
+// biome-ignore lint:
+function flattenObject(obj: any, prefix = ''): Record<string, any> {
+  // biome-ignore lint:
+  const flattened: Record<string, any> = {}
 
-const { Version } = r('./GMLIB-LegacyRemoteCallApi/lib/GMLIB_API-JS')
-const PAPI = r('./GMLIB-LegacyRemoteCallApi/lib/BEPlaceholderAPI-JS.js').PAPI as {
-  translateString(str: string, pl?: Player): string
-  registerPlayerPlaceholder(callback: (pl: Player) => string, pluginName: string, PAPIName: string): boolean
+  for (const key in obj) {
+    if (Object.hasOwnProperty.call(obj, key)) {
+      const newKey = prefix ? `${prefix}.${key}` : key
+
+      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+        Object.assign(flattened, flattenObject(obj[key], newKey))
+      } else {
+        flattened[newKey] = obj[key]
+      }
+    }
+  }
+
+  return flattened
 }
 
-if (!Version || !PAPI) {
-  logger.error(t`info.miss_gmlib`)
-} else {
+export const PLUGIN_DESCRIPTION = t`plugin.description`
+
+function handlePAPI() {
+  t`comment: 傻逼 tsup，我特么都说了不是 node.js 还特么搁这处理 require()，于是只好重命名了`
+  const r = require
+
+  if (!r('./GMLIB-LegacyRemoteCallApi/lib/GMLIB_API-JS').Version) {
+    logger.error(t`info.miss_gmlib`)
+    return
+  }
+
+  PAPI = r('./GMLIB-LegacyRemoteCallApi/lib/BEPlaceholderAPI-JS.js').PAPI
+  if (!PAPI) {
+    logger.error(t`info.miss_gmlib`)
+    return
+  }
+
   t`Comment: 傻逼 GMLIB 我操你妈，我特么调试半天寻思怎么就报错了，原来是你那傻逼玩意不支持箭头函数作为回调函数，老子这辈子写这么久 JS 见过最无语的傻屌`
   function getName(pl: Player) {
     return pl.realName
@@ -127,26 +155,14 @@ if (!Version || !PAPI) {
   PAPI.registerPlayerPlaceholder(getS, PLUGIN_NAME, 's')
 }
 
-// biome-ignore lint:
-function flattenObject(obj: any, prefix = ''): Record<string, any> {
-  // biome-ignore lint:
-  const flattened: Record<string, any> = {}
-
-  for (const key in obj) {
-    if (Object.hasOwnProperty.call(obj, key)) {
-      const newKey = prefix ? `${prefix}.${key}` : key
-
-      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-        Object.assign(flattened, flattenObject(obj[key], newKey))
-      } else {
-        flattened[newKey] = obj[key]
-      }
-    }
+mc.listen('onServerStarted', () => {
+  try {
+    handlePAPI()
+  } catch (e) {
+    logger.warn(`Error while register PAPI: ${e}`, e)
+    logger.warn(t`info.miss_gmlib`)
+    logger.warn(t`info.miss_gmlib_2`)
   }
-
-  return flattened
-}
-
-export const PLUGIN_DESCRIPTION = t`plugin.description`
+})
 
 export default t

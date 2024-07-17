@@ -176,7 +176,7 @@ export default class Manger extends Component<Config['manger']> {
     banCmd.setEnum('ListAction', ['ls'])
     banCmd.setEnum('UnbanAction', ['unban'])
     banCmd.setEnum('BanAction', ['ban', 'banip'])
-    banCmd.mandatory('actiZon', ParamType.Enum, 'ListAction', 1)
+    banCmd.mandatory('action', ParamType.Enum, 'ListAction', 1)
     banCmd.mandatory('action', ParamType.Enum, 'UnbanAction', 1)
     banCmd.mandatory('action', ParamType.Enum, 'BanAction', 1)
     banCmd.mandatory('player', ParamType.String)

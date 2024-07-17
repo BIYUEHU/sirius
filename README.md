@@ -21,6 +21,8 @@ LeviLamina 作为一统 BDS Loader 的大型项目，其生态可谓百花齐放
 
 ## 🔎 Install
 
+> 如果加载时有 GMLIB-LegacyRemoteCallApi 相关报错，请考虑降级 GMLIB-LegacyRemoteCallApi 到 `0.12.5` 或更早版本，已知 `0.13.0` 版本会出现该问题
+
 1. 前往 [GitHub Releases](https://github.com/biyuehu/sirius/releases) 下载构建完毕的发行版本
 2. 解压所有文件解压至 `BDS/plugins/Sirius` 目录下（确保构建好的 JS 文件位于 `BDS/plugins/sirius/Sirius.js`）
 3. 启动 LeviLamina

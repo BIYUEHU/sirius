@@ -68,6 +68,8 @@ export default class Loader {
       if (!config || config.enabled) new component(config ?? {}).register()
     })
 
-    logger.info(`Sirius Loaded v${version.join('.')}`)
+    mc.listen('onServerStarted', () => {
+      logger.info(`Sirius Loaded v${version.join('.')} by ${this.meta.author}`)
+    })
   }
 }

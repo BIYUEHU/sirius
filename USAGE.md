@@ -257,6 +257,8 @@ type = "sell"
 
 仅管理员可用。
 
+- `/nbt [self/block/entity/item]`：查看自身/当前站立方块/面向实体/手持物品的 NBT 数据，默认 `self`
+
 ### Manger
 
 - `/vanish`：设置隐身
