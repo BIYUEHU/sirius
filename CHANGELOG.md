@@ -1,4 +1,13 @@
-# 1.0.0 (2024-07-15)
+## [1.0.1](https://github.com/biyuehu/sirius/compare/v1.0.0...v1.0.1) (2024-07-17)
+
+
+### Bug Fixes
+
+* command "ban ls" bug ([e35c932](https://github.com/biyuehu/sirius/commit/e35c932d310292ffe8ea964c83c2744ad765e6e7))
+
+
+
+# [1.0.0](https://github.com/biyuehu/sirius/compare/59c6543e90c3f563be0960caf841d810c0930aa4...v1.0.0) (2024-07-15)
 
 
 ### Bug Fixes
